@@ -1,0 +1,27 @@
+{
+  "total": 2,
+  "jobPostings": [
+    {
+      "title": "Senior Data Scientist, Machine Learning",
+      "externalPath": "/job/fixture-match-1",
+      "timeType": "Full time",
+      "locationsText": "Bengaluru, Maruthi Onyx - TESCO TSA",
+      "postedOn": "Posted Today",
+      "bulletFields": [
+        "JR-0000117547"
+      ]
+    },
+    {
+      "title": "Data Scientist Intern",
+      "externalPath": "/job/fixture-excl-1",
+      "timeType": "Full time",
+      "locationsText": "Bengaluru, Maruthi Onyx - TESCO TSA",
+      "postedOn": "Posted Yesterday",
+      "bulletFields": [
+        "JR-0000117547"
+      ]
+    }
+  ],
+  "facets": [],
+  "userAuthenticated": false
+}

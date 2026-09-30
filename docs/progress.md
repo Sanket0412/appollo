@@ -35,7 +35,7 @@ marking anything digested, and the first manual GitHub Actions run in Step 11.
 | 1 | Foundation, database and migrations | **Done**, committed `95efd13`, pushed | — |
 | 2 | LCA loader | **Done**, committed `3b84b31`, pushed | — |
 | 3 | Employer matching and `companies.yaml` | **Done**, committed and pushed | — |
-| 4 | ATS fetchers | Not started | Step 3's `companies.yaml` entries (for real slugs); live field verification for Lever/Ashby/Workday |
+| 4 | ATS fetchers | **Done**, committed and pushed | — |
 | 5 | Prefilter, dedup, run orchestrator | Not started | Step 4 |
 | 7 | Embeddings and shortlist | Not started | Step 5 |
 | 8 | Haiku rubric via Batches API | Not started | Step 7 |
@@ -68,4 +68,8 @@ See [DECISIONS.md](./DECISIONS.md) for resolved decisions and open questions (Sm
   - **Final `companies.yaml`: 58 entries** (20 manual + 38 hn), 19 Workday / 8 Greenhouse / 4 Lever / 27 Ashby.
   - `DIGEST_TO` is still empty in `.env` despite Sanket saying it was set — flagged again, not fixed (his call, needs his own address).
 
-**Resume point if this session ends here:** Step 3 is fully committed and pushed. Next up is Step 4 (ATS fetchers), per the build order above.
+- **2026-09-30** — Step 4 built, tested and pushed: `pipeline/models.py` (`CompanyConfig`, `RawJob`, `Job` matching the `jobs` table), `pipeline/fetchers/base.py` (shared session, tenacity retries honoring `Retry-After`, per-host 1 req/s rate limit, 6h JSON cache under `data/cache/http/`, no-op in CI), and all four fetchers (Greenhouse, Lever, Ashby, Workday). Verified every ATS's live response shape against a real company before coding (DoorDash, Palantir, Smarkets, Barclays) — all matched `BUILD_PLAN.md`'s documented fields exactly, plus a couple of useful extras (Workday's job-detail endpoint includes a `country` field, handy for freshness/`is_us` later). `pipeline/text_utils.py` gained `html_to_text()`, `title_matches()` and `parse_location()`. Built fixtures from real (lightly edited) responses for all 4 ATS and a full `tests/test_fetchers.py` using monkeypatched HTTP calls. Added a minimal `pipeline/run.py` (fetch-only; Step 5 adds prefilter/dedup/upsert) to support the dry-run smoke test.
+  - **Live smoke test across all 58 `companies.yaml` entries:** Greenhouse 8 companies/2 fresh jobs, Lever 4/0, Ashby 27/0, Workday 19/70. Investigated the two zero-hit ATS directly rather than assuming a bug: DoorDash's 8 title-matching DS/ML roles are all genuinely older than 7 days (oldest from 2024); Runway ML's 43 open roles include zero title matches even before date filtering.
+  - **Finding: title regex coverage gap (not a Step 4 bug).** Runway ML's actual titles — "Applied Research Scientist," "Research Engineer, Data Foundations," "Research Science Manager, Foundation Models" — are clearly DS/ML-relevant but don't match `search.yaml`'s current include patterns (the `research (engineer|scientist)` pattern requires "ml"/"ai" to appear later in the same title; `applied (ai|ml|scientist|science)` requires "applied" immediately before one of those words). This is a config-tuning question for Sanket, logged in `DECISIONS.md`, not something fixed unilaterally.
+
+**Resume point if this session ends here:** Steps 1-4 are committed and pushed. Next up is Step 5 (prefilter, dedup, run orchestrator), per the build order above.

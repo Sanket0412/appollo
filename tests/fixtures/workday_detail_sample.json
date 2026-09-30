@@ -1,0 +1,80 @@
+{
+  "jobPostingInfo": {
+    "id": "fixture-match-1-id",
+    "title": "Senior Data Scientist, Machine Learning",
+    "jobDescription": "<h1><b>Job Description</b></h1><p style=\"text-align:inherit\"></p><p></p><p></p><p><b>Purpose of the role</b></p><p>To build and maintain the systems that collect, store, process, and analyse data, such as data pipelines, data warehouses and data lakes to ensure that all data is accurate, accessible, and secure.\u00a0</p><p></p><p><b>Accountabilities</b></p><ul><li>Build and maintenance of data architectures pipelines that enable the transfer and processing of durable, complete and consistent data.</li><li>Design and implementation of data warehoused and data lakes that manage the appropriate data volumes and velocity and adhere to the required security measures.</li><li>Development of processing and analysis algorithms fit for the intended data complexity and volumes.</li><li>Collaboration with data scientist to build and deploy machine learning models.</li></ul><p></p><p><b>Assistant Vice President Expectations</b></p><ul><li>To advise and influence decision making, contribute to policy development and take responsibility for operational effectiveness. Collaborate closely with other functions/ business divisions.</li><li>Lead a team performing complex tasks, using well developed professional knowledge and skills  to deliver on work that impacts the whole business function. Set objectives and coach employees in pursuit of those objectives, appraisal of performance relative to objectives and determination of reward outcomes</li><li>If the position has leadership responsibilities, People Leaders are expected to demonstrate a clear set of leadership behaviours to create an environment for colleagues to thrive and deliver to a consistently excellent standard. The four LEAD behaviours are: L \u2013 Listen and be authentic, E \u2013 Energise and inspire, A \u2013 Align across the enterprise, D \u2013 Develop others.</li><li>OR for an individual contributor, they will lead collaborative assignments and guide team members through structured assignments, identify the need for the inclusion of other areas of specialisation to complete assignments. They will identify new directions for assignments and/ or projects, identifying a combination of cross functional methodologies or practices to meet required outcomes.</li><li>Consult on complex issues; providing advice to People Leaders to support the resolution of escalated issues.</li><li>Identify ways to mitigate risk and developing new policies/procedures in support of the control and governance agenda.</li><li>Take ownership for managing risk and strengthening controls in relation to the work done.</li><li>Perform work that is closely related to that of other areas, which requires understanding of how areas coordinate and contribute to the achievement of the objectives of the organisation sub-function.</li><li>Collaborate with other areas of work, for business aligned support areas to keep up to speed with business activity and the business strategy.</li><li>Engage in complex analysis of data from multiple sources of information, internal and external sources such as procedures and practises (in other areas, teams, companies, etc).to solve problems creatively and effectively.</li><li>Communicate complex information. 'Complex' information could include sensitive information or information that is difficult to communicate because of its content or its audience.</li><li>Influence or convince stakeholders to achieve outcomes.</li></ul><p></p><p>All colleagues will be expected to demonstrate the Barclays Values of Respect, Integrity, Service, Excellence and Stewardship \u2013 our moral compass, helping us do what we believe is right. They will also be expected to demonstrate the Barclays Mindset \u2013 to Empower, Challenge and Drive \u2013 the operating manual for how we behave. </p><p></p><p></p><p>Join us as a Data Engineer - AWS Cloud Engineer at Barclays, responsible for supporting the successful delivery of location strategy projects to plan, budget, agreed quality and governance standards.</p><p></p><p>To be successful as a Data Engineer - AWS Cloud Engineer you should have experience with:\u00a0\u00a0</p><p></p><ul><li>Build and maintain AWS cloud infrastructure and platform services.</li><li>Automate infrastructure provisioning and configuration management using Terraform, CloudFormation and Ansible.</li><li>Develop and support CI/CD pipelines to enable efficient and reliable deployments.</li><li>Monitor, troubleshoot and support production environments, including incident management, patching, backup and recovery.</li><li>Implement security, governance and operational controls</li><li>Manage cloud monitoring, observability and alerting solutions to ensure platform reliability and performance.</li><li>Optimise cloud environments for scalability, availability and cost efficiency.</li><li>Collaborate with engineering, architecture and security teams to deliver cloud solutions and continuous improvements.</li><li>Create and maintain technical documentation, operational procedures and support runbooks.</li></ul><p></p><p>Some other highly valued skills may include:</p><ul><li>Strong understanding of AWS Cloud Computing and Cloud Networking concepts.</li><li>Hands-on experience with core AWS services including: \u00a0EC2, S3, VPC, RDS, IAM, Lambda, DynamoDB, CloudWatch, Auto Scaling, Load Balancers.</li><li>Strong knowledge of AWS Well-Architected Framework.</li><li>Infrastructure as Code experience using Terraform and/or CloudFormation.</li><li>Experience with CI/CD tools such as Jenkins and GitHub, Gitlab.</li><li>Strong Linux administration and Shell scripting experience.</li><li>Experience with configuration management tools such as Ansible.</li><li>Strong problem-solving, troubleshooting and analytical skills.</li><li>Experience with observability tools.</li><li>Experience with containerisation technologies such as Docker and Kubernetes/EKS.</li><li>Experience with cost optimisation and FinOps principles.</li><li>Experience with Apache Spark, Apache Airflow and other cloud-based data services is good to have.</li></ul><p></p><p>You may be assessed on key critical skills relevant for success in role, such as risk and controls, change and transformation, business acumen, strategic thinking and digital and technology, as well as job-specific technical skills.</p><p></p><p>This role is based out of Bengaluru.</p><p></p><p style=\"text-align:inherit\"></p><p style=\"text-align:inherit\"></p>",
+    "location": "Bengaluru, Maruthi Onyx - TESCO TSA",
+    "postedOn": "Posted Today",
+    "startDate": "2026-09-29",
+    "timeType": "Full time",
+    "jobReqId": "JR-0000117547",
+    "jobPostingId": "Data-Engineer---AWS-Cloud-Engineer_JR-0000117547",
+    "jobPostingSiteId": "External_Career_Site_Barclays",
+    "country": {
+      "descriptor": "India",
+      "id": "c4f78be1a8f14da0ab49ce1162348a5e"
+    },
+    "canApply": true,
+    "posted": true,
+    "includeResumeParsing": true,
+    "jobRequisitionLocation": {
+      "descriptor": "Bengaluru, Maruthi Onyx - TESCO TSA",
+      "country": {
+        "descriptor": "India",
+        "id": "c4f78be1a8f14da0ab49ce1162348a5e",
+        "alpha2Code": "IN"
+      }
+    },
+    "externalUrl": "https://barclays.wd3.myworkdayjobs.com/External_Career_Site_Barclays/job/fixture-match-1",
+    "questionnaireId": "7312167fa45f1001e09b105ece450000"
+  },
+  "hiringOrganization": {
+    "name": "1203 Barclays Global Serv. Cent",
+    "url": ""
+  },
+  "similarJobs": [
+    {
+      "title": "Data Engineer - ETL",
+      "externalPath": "/job/Bengaluru-Maruthi-Onyx---TESCO-TSA/Data-Engineer---ETL_JR-0000118108",
+      "timeType": "Full time",
+      "locationsText": "Bengaluru, Maruthi Onyx - TESCO TSA",
+      "postedOn": "Posted Today",
+      "startDate": "2026-09-29"
+    },
+    {
+      "title": "Data Engineer - PySpark Developer",
+      "externalPath": "/job/Bengaluru-Maruthi-Onyx---TESCO-TSA/Data-Engineer---PySpark-Developer_JR-0000117446-2",
+      "timeType": "Full time",
+      "locationsText": "Bengaluru, Maruthi Onyx - TESCO TSA",
+      "postedOn": "Posted Today",
+      "startDate": "2026-09-29"
+    },
+    {
+      "title": "Engineer - AI Platform",
+      "externalPath": "/job/Bengaluru-Maruthi-Onyx---TESCO-TSA/Engineer---AI-Platform_JR-0000131618-1",
+      "timeType": "Full time",
+      "locationsText": "Bengaluru, Maruthi Onyx - TESCO TSA",
+      "postedOn": "Posted Today",
+      "startDate": "2026-09-29",
+      "timeLeftToApply": "2 days left to apply",
+      "jobPostingEndDateAsText": "End Date: October 3, 2026"
+    },
+    {
+      "title": "Vice President \u2013 AI Engineer",
+      "externalPath": "/job/Bengaluru-Maruthi-Onyx---TESCO-TSA/Vice-President---AI-Engineer_JR-0000102510",
+      "timeType": "Full time",
+      "locationsText": "2 Locations",
+      "postedOn": "Posted 30+ Days Ago",
+      "startDate": "2026-08-19"
+    },
+    {
+      "title": "Senior Engineer - AI Platform",
+      "externalPath": "/job/Bengaluru-Maruthi-Onyx---TESCO-TSA/Staff-Engineer-Applied-AI_JR-0000103435-4",
+      "timeType": "Full time",
+      "locationsText": "2 Locations",
+      "postedOn": "Posted 30+ Days Ago",
+      "startDate": "2026-07-24"
+    }
+  ],
+  "userAuthenticated": false
+}
