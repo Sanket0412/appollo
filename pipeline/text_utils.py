@@ -49,6 +49,21 @@ def normalize_company(name: str) -> str:
     return _WHITESPACE_RE.sub(" ", text).strip()
 
 
+_WORKMODE_RE = re.compile(r"\b(remote|hybrid|onsite|on site)\b", re.IGNORECASE)
+_TRAILING_CODE_RE = re.compile(r"\b(req|job|jr|r)?\s*\d{3,}\w*\s*$", re.IGNORECASE)
+
+
+def title_norm(title: str) -> str:
+    """Lowercase, strip work-mode words and trailing requisition codes, so the same role posted as
+    'Data Scientist' and 'Data Scientist - Remote (Req-104822)' dedup to the same canonical id."""
+    text = title.lower()
+    text = _PUNCT_RE.sub(" ", text)
+    text = _WHITESPACE_RE.sub(" ", text).strip()
+    text = _WORKMODE_RE.sub(" ", text)
+    text = _TRAILING_CODE_RE.sub(" ", text)
+    return _WHITESPACE_RE.sub(" ", text).strip()
+
+
 _BLOCK_TAGS = ["p", "div", "li", "br", "h1", "h2", "h3", "h4", "h5", "h6"]
 
 

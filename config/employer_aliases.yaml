@@ -10,3 +10,12 @@ Amazon:
   - Amazon.com Services LLC
   - Amazon Web Services, Inc.
   - Amazon Development Center U.S., Inc.
+
+# Found via Step 5's live run: companies.yaml's display name didn't fuzzy-match the LCA legal
+# entity closely enough (missing "Associates"/"Global Markets" entirely drops below the 90 threshold).
+Walmart:
+  - Wal-Mart Associates, Inc.
+
+Citigroup:
+  - Citibank, N.A.
+  - Citigroup Global Markets Inc.
