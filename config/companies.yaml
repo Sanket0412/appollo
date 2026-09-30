@@ -1,0 +1,290 @@
+# Appollo company board list. Every entry needs a source: manual | hn | discovered.
+# ats: greenhouse | lever | ashby | workday
+# Workday entries need host, tenant and board from the careers URL, e.g.
+# https://intel.wd1.myworkdayjobs.com/External -> host intel.wd1.myworkdayjobs.com, tenant intel, board External
+#
+# cap_exempt: true marks employers statutorily exempt from the annual H-1B cap (universities,
+# their affiliated nonprofits, nonprofit/government research organizations). Not yet wired into
+# the jobs table or digest -- see docs/DECISIONS.md for why and what Step 9 needs to add it.
+#
+# --- Manual: add companies here by hand any time. No script ever removes or edits these. ---
+# Researched 2026-09-30 from the top-50 NY/NJ employers by LCA filing volume (see docs/DECISIONS.md
+# for the full methodology and the 30 employers that had no match on our 4 ATS, in
+# data/private/unresolved_companies.txt).
+- name: Barclays
+  ats: workday
+  host: barclays.wd3.myworkdayjobs.com
+  tenant: barclays
+  board: External_Career_Site_Barclays
+  source: manual
+- name: Morgan Stanley
+  ats: workday
+  host: ms.wd5.myworkdayjobs.com
+  tenant: ms
+  board: External
+  source: manual
+- name: Citigroup
+  ats: workday
+  host: citi.wd5.myworkdayjobs.com
+  tenant: citi
+  board: '2'
+  source: manual
+- name: Bank of America
+  ats: workday
+  host: ghr.wd1.myworkdayjobs.com
+  tenant: ghr
+  board: Lateral-US
+  source: manual
+- name: American Express
+  ats: workday
+  host: amh.wd12.myworkdayjobs.com
+  tenant: amh
+  board: External_Careers
+  source: manual
+- name: Accenture
+  ats: workday
+  host: accenture.wd103.myworkdayjobs.com
+  tenant: accenture
+  board: AccentureCareers
+  source: manual
+- name: Regeneron Pharmaceuticals
+  ats: workday
+  host: regeneron.wd1.myworkdayjobs.com
+  tenant: regeneron
+  board: Careers
+  source: manual
+- name: BlackRock
+  ats: workday
+  host: blackrock.wd1.myworkdayjobs.com
+  tenant: blackrock
+  board: BlackRock_Professional
+  source: manual
+- name: PwC
+  ats: workday
+  host: pwc.wd3.myworkdayjobs.com
+  tenant: pwc
+  board: US_Experienced_Careers
+  source: manual
+- name: Bristol-Myers Squibb
+  ats: workday
+  host: bristolmyerssquibb.wd5.myworkdayjobs.com
+  tenant: bristolmyerssquibb
+  board: BMS
+  source: manual
+- name: Walmart
+  ats: workday
+  host: walmart.wd504.myworkdayjobs.com
+  tenant: walmart
+  board: WalmartExternal
+  source: manual
+- name: Fiserv
+  ats: workday
+  host: fiserv.wd5.myworkdayjobs.com
+  tenant: fiserv
+  board: EXT
+  source: manual
+- name: Deutsche Bank
+  ats: workday
+  host: db.wd3.myworkdayjobs.com
+  tenant: db
+  board: DBWebsite
+  source: manual
+- name: RBC Capital Markets
+  ats: workday
+  host: rbc.wd3.myworkdayjobs.com
+  tenant: rbc
+  board: RBCGLOBAL1
+  source: manual
+- name: Palantir Technologies
+  ats: lever
+  slug: palantir
+  source: manual
+- name: DoorDash
+  ats: greenhouse
+  slug: doordashusa
+  source: manual
+- name: Memorial Sloan Kettering Cancer Center
+  ats: workday
+  host: msk.wd108.myworkdayjobs.com
+  tenant: msk
+  board: MSKCC_Careers_Primary
+  source: manual
+  cap_exempt: true
+- name: Montefiore Medical Center
+  ats: workday
+  host: montefiore.wd12.myworkdayjobs.com
+  tenant: montefiore
+  board: MMC
+  source: manual
+  cap_exempt: true
+- name: NYU Grossman School of Medicine
+  ats: workday
+  host: nyuhs.wd12.myworkdayjobs.com
+  tenant: nyuhs
+  board: nyuhscareers1
+  source: manual
+  cap_exempt: true
+- name: Cornell University
+  ats: workday
+  host: cornell.wd1.myworkdayjobs.com
+  tenant: cornell
+  board: CornellCareerPage
+  source: manual
+  cap_exempt: true
+# --- HN "Who is hiring" (scripts/seed_from_hn.py). Discovery may add here, never overwrite. ---
+- name: Smarkets
+  ats: ashby
+  slug: smarkets
+  source: hn
+- name: Cerity Partners
+  ats: workday
+  host: ceritypartners.wd12.myworkdayjobs.com
+  tenant: ceritypartners
+  board: ceritypartnerscareers
+  source: hn
+- name: Stream
+  ats: ashby
+  slug: stream
+  source: hn
+- name: Findigs
+  ats: lever
+  slug: findigs
+  source: hn
+- name: Wikimedia Foundation
+  ats: greenhouse
+  slug: wikimedia
+  source: hn
+- name: Comity Inc.
+  ats: ashby
+  slug: comity
+  source: hn
+- name: Runway
+  ats: ashby
+  slug: runway-ml
+  source: hn
+- name: Middesk
+  ats: ashby
+  slug: middesk
+  source: hn
+- name: Oklo
+  ats: greenhouse
+  slug: oklo
+  source: hn
+- name: Chariot Claims
+  ats: ashby
+  slug: chariotclaims
+  source: hn
+- name: novacredit
+  ats: greenhouse
+  slug: novacredit
+  source: hn
+- name: Discord
+  ats: greenhouse
+  slug: discord
+  source: hn
+- name: duck-duck-go
+  ats: ashby
+  slug: duck-duck-go
+  source: hn
+- name: Odyssey
+  ats: ashby
+  slug: odyssey
+  source: hn
+- name: Loft Orbital
+  ats: lever
+  slug: loftorbital
+  source: hn
+- name: Artificial Intelligence Underwriting Company (aiuc.com)
+  ats: ashby
+  slug: aiuc
+  source: hn
+- name: Relativity Space
+  ats: greenhouse
+  slug: relativity
+  source: hn
+- name: DeepL
+  ats: ashby
+  slug: DeepL
+  source: hn
+- name: Mattermost
+  ats: greenhouse
+  slug: mattermost
+  source: hn
+- name: BCC
+  ats: greenhouse
+  slug: blackcanyonconsulting
+  source: hn
+- name: LatchBio
+  ats: ashby
+  slug: LatchBio
+  source: hn
+- name: Hiya
+  ats: ashby
+  slug: hiya
+  source: hn
+- name: Artificial Analysis
+  ats: ashby
+  slug: artificialanalysis
+  source: hn
+- name: Robotics and AI Institute
+  ats: lever
+  slug: rai
+  source: hn
+- name: Reframe Systems
+  ats: ashby
+  slug: reframesystems
+  source: hn
+- name: Neon Commerce
+  ats: ashby
+  slug: Neon
+  source: hn
+- name: Prior Labs
+  ats: ashby
+  slug: prior-labs
+  source: hn
+- name: Checkly
+  ats: ashby
+  slug: checkly
+  source: hn
+- name: Oscilar.com
+  ats: ashby
+  slug: oscilar
+  source: hn
+- name: norm-ai
+  ats: ashby
+  slug: norm-ai
+  source: hn
+- name: SentiLink
+  ats: ashby
+  slug: sentilink
+  source: hn
+- name: Colonist
+  ats: ashby
+  slug: colonist
+  source: hn
+- name: LiveKit
+  ats: ashby
+  slug: livekit
+  source: hn
+- name: Deeter Analytics
+  ats: ashby
+  slug: deeter-analytics
+  source: hn
+- name: PermitFlow (YC W22)
+  ats: ashby
+  slug: permitflow
+  source: hn
+- name: Turquoise
+  ats: ashby
+  slug: turquoise-health
+  source: hn
+- name: close
+  ats: ashby
+  slug: close
+  source: hn
+- name: Anterior (Sequoia-backed, Series B)
+  ats: ashby
+  slug: anterior
+  source: hn
+
+# --- Auto-discovered from JobSpy results (Step 6). ---

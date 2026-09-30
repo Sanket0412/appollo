@@ -112,7 +112,9 @@ lca:
 workday_search_terms: ['data scientist', 'machine learning', 'AI engineer', 'applied scientist']
 
 jobspy:
-  sites: [indeed, linkedin, google]
+  # Exact python-jobspy Site enum values (verified against the installed 1.1.82). If glassdoor or
+  # zip_recruiter error out or return nothing on a given run, log a warning and continue.
+  sites: [indeed, linkedin, google, glassdoor, zip_recruiter]
   search_terms: ['data scientist', 'machine learning engineer', 'AI engineer', 'applied scientist']
   results_wanted: 40
   distance_miles: 50
@@ -126,13 +128,18 @@ scoring:
   fallback_sync: true
 
 ranking:
+  # LCA history can only raise rank, never lower it. A job with no LCA match at all (employer never
+  # filed, or employer_match.py couldn't match it) is neutral, not penalized: it gets none of the
+  # bonuses below, same as a matched employer with zero relevant filings. The digest and
+  # v_daily_digest must show "No filing history" for the no-match case rather than a 0 count, since
+  # those are different facts (implemented in Step 9; lca_filings/lca_relevant_soc stay NULL for
+  # "never matched" vs 0 for "matched, zero relevant").
   nyc_metro_bonus: 15
   remote_bonus: 5
   sponsorship_available_bonus: 10
   lca_strong_bonus: 8           # lca_relevant_soc >= lca_strong_threshold
   lca_strong_threshold: 10
   lca_some_bonus: 4
-  no_signal_penalty: -10        # Not Mentioned and zero LCA filings
   fresh_24h_bonus: 5
 
 digest:

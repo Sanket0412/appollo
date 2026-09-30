@@ -1,0 +1,12 @@
+# Manual overrides for employer_match.py. Keys and values are normalized with normalize_company()
+# at load time, so exact spelling/punctuation here does not matter.
+#
+# A key maps to one or more LCA employer names. When a company files LCAs under several legal
+# entities (common for large tech companies), list all of them here; their filing counts are
+# summed. Seed this file as multi-entity cases turn up in lca_loader.py's top-20 output or in
+# fuzzy-match misses during later steps.
+
+Amazon:
+  - Amazon.com Services LLC
+  - Amazon Web Services, Inc.
+  - Amazon Development Center U.S., Inc.

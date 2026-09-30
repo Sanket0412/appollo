@@ -336,34 +336,46 @@ Pass when the loader finishes, the top 20 list contains recognizable large NY an
 
 ### Step 3. Employer matching and companies.yaml
 
+**Revised 2026-09-29, after live testing.** The original plan probed ATS slug guesses for the top LCA
+filers by volume. Live testing showed this doesn't work: LCA filing volume does not predict ATS
+choice. The heaviest H-1B filers (Amazon, Google, Microsoft, JPMorgan, Citibank) run Workday or
+proprietary systems, not Greenhouse/Lever/Ashby, so a 2,103-candidate probe ordered by filing volume
+returned a ~0% real hit rate at the top (its one "hit," LinkedIn, was a Greenhouse sandbox board with
+job titles like `123123`) and only surfaced real boards (~8-10% hit rate) once it reached mid-size
+companies buried deep in the ranking, at a projected cost of several hours of live network probing for
+a small yield. See `docs/DECISIONS.md` for the full writeup. `pipeline/sponsorship/employer_match.py`
+itself (LCA sponsorship-history lookup) is unaffected by this; only the discovery mechanism for
+`companies.yaml` changed. Discovery is now three sources instead of one prober:
+
 **Build**
-- `pipeline/sponsorship/employer_match.py` with `match_employer(company: str) -> LcaMatch | None`. Order is alias override from `config/employer_aliases.yaml` (e.g. `meta: meta platforms`, `google: google`), then exact `employer_norm` match, then `rapidfuzz.process.extractOne(scorer=token_sort_ratio, score_cutoff=90)` over all employer names loaded once into memory. Cache results per `company_norm` for the run. Returns name, score, `filings_total`, `filings_relevant_soc`.
-- `scripts/build_companies.py` seeds `config/companies.yaml`.
-  1. Candidates are the top 300 employers by `filings_relevant_soc`, plus every employer with `ny_nj_filings >= 5` and `filings_relevant_soc >= 3`, minus names matching the staffing blocklist and patterns in `search.yaml`.
-  2. For each candidate, generate slug guesses (e.g. "Two Sigma Investments" gives `twosigma`, `two-sigma`, `twosigmainvestments`) and probe, at most 1 request per second, `boards-api.greenhouse.io/v1/boards/{slug}/jobs`, `api.lever.co/v0/postings/{slug}?mode=json&limit=1`, and `api.ashbyhq.com/posting-api/job-board/{slug}`. A 200 with at least one job counts as a hit.
-  3. Merge hits into `companies.yaml` without removing manual entries. Write unresolved names to `data/private/unresolved_companies.txt` so Sanket can add Workday URLs by hand.
-  4. Support `--dry-run` and `--limit N`.
-- `companies.yaml` format:
+- `pipeline/sponsorship/employer_match.py` with `match_employer(company: str) -> LcaMatch | None`. Order is alias override from `config/employer_aliases.yaml`, then exact `employer_norm` match, then `rapidfuzz.process.extractOne(scorer=token_sort_ratio, score_cutoff=search.yaml lca.fuzzy_threshold)` over all employer names loaded once into memory. Cache results per `company_norm` for the run. An alias may map to a list of LCA employer names (large companies often file under several legal entities); when it does, sum `filings_total`, `filings_relevant_soc` and `ny_nj_filings` across every entity found. Returns matched name, score, source (`alias`/`exact`/`fuzzy`), the summed counts, and which underlying entities they came from.
+- `pipeline/ats_discovery.py`, shared by sources B/C/G below: `parse_ats_url(url) -> dict | None` recognizes Greenhouse, Lever, Ashby and Workday URLs and extracts `{ats, slug}` or, for Workday, `{ats: workday, host, tenant, board}`; `looks_like_test_board(job_titles) -> bool` flags sandbox/test boards (digits-only titles, "test", "sandbox", "bug bash"); a `BLOCKLISTED_BOARDS` set for known-bad boards found by hand (e.g. LinkedIn's Greenhouse sandbox slug); `validate_board(ats, ref) -> bool` does one live fetch and requires at least 3 open jobs and a pass through `looks_like_test_board`.
+- **Source B, curated big NYC employers (manual, one-time).** Take the top 40 employers from the `ny_nj_filings` ranking that are not staffing firms (`search.yaml` blocklist) or large offshore IT consultancies/staff-aug firms (Cognizant, TCS, Infosys, Wipro, HCL, LTIMindtree, Genpact, etc.; large product/consulting companies like Deloitte, EY, Accenture, Capgemini stay per `docs/DECISIONS.md` #1). For each, find the official careers site by hand (web search) and identify the ATS: Greenhouse/Lever/Ashby get a slug, Workday gets host/tenant/board verified with one live CXS request, anything else goes in `data/private/unresolved_companies.txt` with the ATS name if known. Add as `source: manual`. Show Sanket the list before writing it.
+- **Source C, `scripts/seed_from_hn.py`, HN "Who is hiring."** Uses the public HN Algolia API (verify the exact endpoint live first) to find the `--months N` (default 1) most recent "Ask HN: Who is hiring?" threads by author `whoishiring`, fetches each thread's full comment tree in one call, extracts board URLs from top-level comments via `parse_ats_url`, validates each with `validate_board` (rejecting the blocklist and test-looking boards), skips staffing-blocklist names and anything already in `companies.yaml` under any source, and appends new entries as `source: hn`. Rate limited to 1 request/second. Reports counts added / no-ATS-link / already-present. Supports `--dry-run`.
+- **Source G (Step 6), auto-discovery from JobSpy.** When a JobSpy result's `job_url_direct` matches `parse_ats_url`, validate it the same way and add as `source: discovered` unless staffing-blocklisted. Log how many were discovered per run. Built alongside the JobSpy fetcher in Step 6, not here.
+- `companies.yaml` structure: a flat list, every entry tagged `source: manual | hn | discovered`, with a comment header and a manual section at the top Sanket can add to by hand at any time. No script may remove or modify a `manual` entry; discovery (`hn`, `discovered`) may only add, never overwrite an `hn` entry.
 
 ```yaml
+# Appollo company board list. Every entry needs a source: manual | hn | discovered.
 # ats: greenhouse | lever | ashby | workday
 # Workday entries need host, tenant and board from the careers URL, e.g.
 # https://intel.wd1.myworkdayjobs.com/External -> host intel.wd1.myworkdayjobs.com, tenant intel, board External
-- {name: Ramp, ats: greenhouse, slug: ramp}
-- {name: Vercel, ats: lever, slug: vercel}
-- {name: OpenAI, ats: ashby, slug: openai}
-- {name: Intel, ats: workday, host: intel.wd1.myworkdayjobs.com, tenant: intel, board: External}
-```
 
-Treat the four sample rows as unverified; the probe decides which survive.
+# --- Manual: add companies here by hand any time; no script ever removes or edits these. ---
+- {name: Ramp, ats: greenhouse, slug: ramp, source: manual}
+- {name: Intel, ats: workday, host: intel.wd1.myworkdayjobs.com, tenant: intel, board: External, source: manual}
+
+# --- HN "Who is hiring" (scripts/seed_from_hn.py). Discovery may add here, never overwrite. ---
+
+# --- Auto-discovered from JobSpy results (Step 6). ---
+```
 
 **Test**
 ```powershell
-.\.venv\Scripts\python.exe scripts\build_companies.py --limit 40 --dry-run
-.\.venv\Scripts\python.exe scripts\build_companies.py
-.\.venv\Scripts\python.exe -m pytest tests\test_employer_match.py -q
+.\.venv\Scripts\python.exe scripts\seed_from_hn.py --dry-run
+.\.venv\Scripts\python.exe -m pytest tests\test_employer_match.py tests\test_ats_discovery.py -q
 ```
-Pass when the dry run prints hits per ATS, the real run writes `companies.yaml` with verified slugs, and match tests cover exact, alias, fuzzy hit and fuzzy miss.
+Pass when the dry run reports realistic added/no-ATS-link/already-present counts with no test-board false positives, and the match/discovery tests cover exact, alias (including multi-entity summing), fuzzy hit, fuzzy miss, URL parsing for all four ATS, and test-board rejection. Sanket reviews the Step 3B curated list and the dry-run output before anything is committed.
 
 ---
 
@@ -557,13 +569,14 @@ rank = fit_score                                     (0 to 100)
      + 10  if sponsorship_jd == 'Available'
      + 8   if lca_relevant_soc >= 10
      + 4   if 1 <= lca_filings and lca_relevant_soc < 10
-     - 10  if sponsorship_jd == 'Not Mentioned' and coalesce(lca_filings, 0) == 0
      + 5   if posted within the last 24 hours
 ```
 
-All weights live in `search.yaml > ranking` so Sanket can tune them without code changes.
+LCA history can only raise rank, never lower it (no penalty for a job with no LCA signal at all). All weights live in `search.yaml > ranking` so Sanket can tune them without code changes.
 
-- `pipeline/export/digest.py` selects `scored` rows not yet digested, takes the top `digest.max_jobs` by rank, groups them into NYC metro, Remote US and Elsewhere US (rank order within each), and writes `data/digests/YYYY-MM-DD.md` locally. Each entry shows company, title, location, posted age, YOE required, sponsorship status with evidence, LCA filings and relevant SOC filings, the one-line summary, and the apply link. Then set `status='digested'` and `digested_at`.
+**"No LCA match" is not the same fact as "matched, zero relevant filings."** `employer_match.py` either finds the employer (alias, exact or fuzzy) or it doesn't. Keep `lca_filings`/`lca_relevant_soc` as `NULL` on the job row when there was no match at all, and only write `0` when the employer was matched but has zero relevant-SOC filings. The digest markdown and `v_daily_digest` must render `NULL` as "No filing history" rather than `0`, since a real 0 is a (mildly) informative fact about a matched employer and a `NULL` just means we have no data.
+
+- `pipeline/export/digest.py` selects `scored` rows not yet digested, takes the top `digest.max_jobs` by rank, groups them into NYC metro, Remote US and Elsewhere US (rank order within each), and writes `data/digests/YYYY-MM-DD.md` locally. Each entry shows company, title, location, posted age, YOE required, sponsorship status with evidence, LCA filings and relevant SOC filings (or "No filing history"), the one-line summary, and the apply link. Then set `status='digested'` and `digested_at`.
 - `pipeline/export/emailer.py` sends the same digest as plain text plus a simple HTML table through `smtp.gmail.com:465` (SSL) when all three `GMAIL_*` variables are set; otherwise skip quietly. Subject like `Appollo, 14 new roles, Tue Sep 29`. Never write the digest to CI logs or artifacts (public repo).
 
 **Test**
@@ -778,7 +791,7 @@ lca:
 workday_search_terms: ['data scientist', 'machine learning', 'AI engineer', 'applied scientist']
 
 jobspy:
-  sites: [indeed, linkedin, google]
+  sites: [indeed, linkedin, google, glassdoor, zip_recruiter]
   search_terms: ['data scientist', 'machine learning engineer', 'AI engineer', 'applied scientist']
   results_wanted: 40
   distance_miles: 50
@@ -792,13 +805,13 @@ scoring:
   fallback_sync: true
 
 ranking:
+  # LCA history can only raise rank, never lower it. No-match is neutral, not penalized.
   nyc_metro_bonus: 15
   remote_bonus: 5
   sponsorship_available_bonus: 10
   lca_strong_bonus: 8           # lca_relevant_soc >= lca_strong_threshold
   lca_strong_threshold: 10
   lca_some_bonus: 4
-  no_signal_penalty: -10        # Not Mentioned and zero LCA filings
   fresh_24h_bonus: 5
 
 digest:
