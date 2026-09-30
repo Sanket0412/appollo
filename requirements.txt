@@ -1,0 +1,17 @@
+requests==2.34.2
+tenacity==9.1.4
+pyyaml==6.0.3
+pydantic==2.13.5
+python-dotenv==1.2.3
+psycopg[binary]==3.3.6
+pgvector==0.5.0
+numpy==1.26.3
+pandas==2.3.3
+pyarrow==25.0.1
+python-calamine==0.8.2
+rapidfuzz==3.14.6
+beautifulsoup4==4.15.0
+fastembed==0.8.1
+anthropic==1.9.0
+pytest==9.1.1
+ruff==0.16.9

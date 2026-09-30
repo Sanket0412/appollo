@@ -1,0 +1,139 @@
+windows:            # --window value -> hours
+  24h: 24
+  7d: 168
+grace_hours: 2      # added to every fetch window; dedup removes overlap
+
+titles:
+  include:          # case-insensitive regexes; at least one must match
+    - '\bdata scien(ce|tist)'
+    - '\bmachine learning\b'
+    - '\bml\s*(engineer|scientist|ops|platform|infrastructure)\b'
+    - '\bmlops\b'
+    - '\b(ai|a\.i\.)\s*(/\s*ml\s*)?(engineer|scientist|developer)\b'
+    - '\bapplied (ai|ml|scientist|science)\b'
+    - '\b(gen(erative)?\s*ai|llm|nlp)\b'
+    - '\bdeep learning\b'
+    - '\bresearch (engineer|scientist)\b.*\b(ml|ai|machine learning)\b'
+    - '\bdecision scien'
+  exclude:          # none may match
+    - '\bintern(ship)?\b'
+    - '\bco-?op\b'
+    - '\bstaff\b'
+    - '\bprincipal\b'
+    - '\bdistinguished\b'
+    - '\bdirector\b'
+    - '\bhead of\b'
+    - '\bvp\b|\bvice president\b'
+    - '\bmanager\b'
+    - '\bpostdoc'
+    - '\bprofessor\b'
+    - '\bsales\b'
+
+locations:
+  us_states: [AL, AK, AZ, AR, CA, CO, CT, DE, DC, FL, GA, HI, ID, IL, IN, IA, KS, KY, LA, ME, MD, MA, MI, MN, MS, MO, MT, NE, NV, NH, NJ, NM, NY, NC, ND, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VT, VA, WA, WV, WI, WY]
+  us_keywords: ['united states', 'usa', 'u.s.', 'us-remote', 'remote - us', 'remote, us', 'remote (us)', 'anywhere in the us']
+  non_us_keywords: ['canada', 'toronto', 'vancouver', 'united kingdom', 'london', 'ireland', 'dublin', 'india', 'bangalore', 'bengaluru', 'hyderabad', 'germany', 'berlin', 'france', 'paris', 'netherlands', 'amsterdam', 'poland', 'spain', 'singapore', 'australia', 'mexico', 'brazil', 'israel', 'emea', 'apac', 'latam']
+  remote_keywords: ['remote', 'anywhere', 'distributed']
+  nyc_metro:        # substring match, case-insensitive
+    - 'new york'
+    - 'nyc'
+    - 'manhattan'
+    - 'brooklyn'
+    - 'queens'
+    - 'bronx'
+    - 'staten island'
+    - 'long island city'
+    - 'jersey city'
+    - 'hoboken'
+    - 'newark'
+    - 'weehawken'
+    - 'secaucus'
+    - 'harrison, nj'
+    - 'fort lee'
+    - 'edison'
+    - 'princeton'
+    - 'iselin'
+    - 'white plains'
+    - 'stamford'
+    - 'greenwich'
+  unclear_remote_policy: keep   # remote with no country: keep and let Haiku judge location_fit
+
+red_flags:          # hard exclude when found in the description, case-insensitive
+  - 'must be (a )?u\.?s\.? citizen'
+  - 'u\.?s\.? citizen(ship)? (is )?required'
+  - 'citizenship is required'
+  - '(active|current|ability to obtain)\s+(a\s+)?(secret|top secret|ts/sci|public trust)'
+  - 'security clearance (is )?required'
+  - '(will|can|do) not (provide |offer )?sponsor'
+  - 'unable to (provide |offer )?sponsor'
+  - 'not (able|eligible) to sponsor'
+  - 'no (visa |h-?1b )?sponsorship'
+  - 'sponsorship (is )?not (available|provided|offered)'
+  - 'without (the need for )?(current or future )?(visa )?sponsorship'
+  - '(green card|gc) holders? only'
+  - '\busc(/gc)? only\b'
+
+staffing:
+  company_blocklist:   # compared against normalize_company(); extend as needed
+    - robert half
+    - teksystems
+    - insight global
+    - randstad
+    - adecco
+    - kforce
+    - apex systems
+    - aerotek
+    - kelly services
+    - manpowergroup
+    - motion recruitment
+    - jobot
+    - cybercoders
+    - harnham
+    - hays
+    - beacon hill staffing
+    - vaco
+    - akkodis
+    - modis
+    - collabera
+    - mindlance
+    - diverse lynx
+    - dice
+  description_patterns:
+    - 'on behalf of (our|a) client'
+    - 'our client (is|has)'
+    - '\bw-?2 (only|contract)\b'
+    - '\bc2c\b|corp[- ]to[- ]corp'
+    - '\bstaffing (agency|firm|partner)\b'
+
+lca:
+  relevant_soc: ['15-2051', '15-1221', '15-1252']   # Data Scientists, Computer and Information Research Scientists, Software Developers
+  fuzzy_threshold: 90
+
+workday_search_terms: ['data scientist', 'machine learning', 'AI engineer', 'applied scientist']
+
+jobspy:
+  sites: [indeed, linkedin, google]
+  search_terms: ['data scientist', 'machine learning engineer', 'AI engineer', 'applied scientist']
+  results_wanted: 40
+  distance_miles: 50
+
+scoring:
+  model: claude-haiku-4-5-20251001
+  min_similarity: 0.55          # tune at Step 7
+  max_per_run: 60
+  max_yoe_required: 6
+  batch_wait_minutes: 25
+  fallback_sync: true
+
+ranking:
+  nyc_metro_bonus: 15
+  remote_bonus: 5
+  sponsorship_available_bonus: 10
+  lca_strong_bonus: 8           # lca_relevant_soc >= lca_strong_threshold
+  lca_strong_threshold: 10
+  lca_some_bonus: 4
+  no_signal_penalty: -10        # Not Mentioned and zero LCA filings
+  fresh_24h_bonus: 5
+
+digest:
+  max_jobs: 30
