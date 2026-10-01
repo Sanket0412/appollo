@@ -123,6 +123,7 @@ jobspy:
 
 scoring:
   model: claude-haiku-4-5-20251001
+  recency_max_points: 15        # added to fit_score in code: full points when posted just now, 0 at max_posting_age_days
   min_similarity: 0.50          # chosen at Step 7 (2026-10-01); raise once irrelevant titles appear in larger runs
   max_per_run: 60
   max_yoe_required: 5           # exclude when years_required_min > this, i.e. skip 6+ (candidate has about 4 years)

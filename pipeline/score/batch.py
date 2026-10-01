@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 import anthropic
 from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
@@ -36,6 +37,7 @@ class Job:
     title: str
     location: str | None
     description: str | None
+    posted_at: datetime | None = None
 
 
 @dataclass
@@ -96,7 +98,7 @@ def load_jobs(conn, ids: list[str]) -> dict[str, Job]:
         return {}
     with conn.cursor() as cur:
         cur.execute(
-            "select id, company, title, location, description from public.jobs where id = any(%s)", (ids,)
+            "select id, company, title, location, description, posted_at from public.jobs where id = any(%s)", (ids,)
         )
         return {r[0]: Job(*r) for r in cur.fetchall()}
 
@@ -104,7 +106,7 @@ def load_jobs(conn, ids: list[str]) -> dict[str, Job]:
 def load_shortlisted(conn, exclude_ids: set[str], limit: int) -> list[Job]:
     with conn.cursor() as cur:
         cur.execute(
-            "select id, company, title, location, description from public.jobs "
+            "select id, company, title, location, description, posted_at from public.jobs "
             "where status = 'shortlisted' and not (id = any(%s)) "
             "and posted_at >= now() - make_interval(days => %s) "
             "order by is_nyc_metro desc, similarity desc nulls last limit %s",
@@ -114,7 +116,11 @@ def load_shortlisted(conn, exclude_ids: set[str], limit: int) -> list[Job]:
 
 
 def apply_score(conn, job: Job, result: rubric.ScoreResult, tally: Tally) -> None:
-    max_yoe = get_settings().search_config["scoring"]["max_yoe_required"]
+    cfg = get_settings().search_config
+    max_yoe = cfg["scoring"]["max_yoe_required"]
+    recency = rubric.recency_points(
+        job.posted_at, datetime.now(timezone.utc), cfg["scoring"]["recency_max_points"], cfg["max_posting_age_days"]
+    )
 
     if not rubric.evidence_is_verbatim(result.sponsorship_evidence, job.description):
         tally.evidence_violations += 1
@@ -142,7 +148,7 @@ def apply_score(conn, job: Job, result: rubric.ScoreResult, tally: Tally) -> Non
             """,
             (
                 result.years_required_min, result.years_required_text, result.seniority,
-                result.sponsorship_jd, result.sponsorship_evidence or None, result.total,
+                result.sponsorship_jd, result.sponsorship_evidence or None, result.total + recency,
                 result.one_line_summary, Jsonb(result.red_flags), status, reason, status, job.id,
             ),
         )

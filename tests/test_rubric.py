@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from pydantic import ValidationError
 
@@ -12,13 +14,13 @@ from pipeline.score.rubric import (
 GOOD = {
     "years_required_min": 3, "years_required_text": "3+ years", "seniority": "mid",
     "sponsorship_jd": "Not Mentioned", "sponsorship_evidence": "",
-    "skills_match": 30, "experience_fit": 15, "domain_fit": 10, "seniority_fit": 10, "location_fit": 5,
+    "skills_match": 30, "experience_fit": 15, "domain_fit": 10, "location_fit": 5,
     "total": 99, "one_line_summary": "Builds ranking models in Python.", "red_flags": [],
 }
 
 
 def test_total_is_recomputed_from_parts():
-    assert ScoreResult(**GOOD).total == 70
+    assert ScoreResult(**GOOD).total == 60
 
 
 def test_null_years_allowed():
@@ -26,7 +28,7 @@ def test_null_years_allowed():
 
 
 @pytest.mark.parametrize("field,value", [
-    ("skills_match", 41), ("experience_fit", 21), ("domain_fit", 16), ("seniority_fit", 16),
+    ("skills_match", 41), ("experience_fit", 21), ("domain_fit", 16),
     ("location_fit", 11), ("skills_match", -1),
 ])
 def test_part_ranges_enforced(field, value):
@@ -69,3 +71,26 @@ def test_build_system_survives_braces_in_resume():
 def test_build_user_truncates_description():
     text = rubric.build_user("Acme", "DS", None, "x" * 20000)
     assert text.count("x") == 12000
+
+
+def test_seniority_fit_is_gone_from_the_schema():
+    assert "seniority_fit" not in rubric.SCHEMA["properties"]
+    assert "total" not in rubric.SCHEMA["required"]
+
+
+NOW = datetime(2026, 10, 1, 12, tzinfo=timezone.utc)
+
+
+def test_recency_full_points_when_just_posted():
+    assert rubric.recency_points(NOW, NOW, 15, 14) == 15
+
+
+def test_recency_decays_linearly_to_zero_at_the_cap():
+    assert rubric.recency_points(NOW - timedelta(days=7), NOW, 15, 14) == 8
+    assert rubric.recency_points(NOW - timedelta(days=14), NOW, 15, 14) == 0
+    assert rubric.recency_points(NOW - timedelta(days=30), NOW, 15, 14) == 0
+
+
+def test_recency_zero_when_date_unknown_and_never_negative_age():
+    assert rubric.recency_points(None, NOW, 15, 14) == 0
+    assert rubric.recency_points(NOW + timedelta(hours=3), NOW, 15, 14) == 15
