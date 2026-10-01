@@ -1,6 +1,6 @@
 """Pipeline CLI.
 
-python -m pipeline.run --sources ats[,jobspy] --window 24h|7d
+python -m pipeline.run --sources ats[,jobspy] --window 24h|7d|14d
                        [--score [--no-llm] [--max-score N]] [--digest] [--email]
                        [--limit-companies N] [--dry-run]
 
@@ -49,7 +49,9 @@ def load_companies() -> list[CompanyConfig]:
 
 def compute_since(window: str) -> datetime:
     settings = get_settings()
-    hours = settings.search_config["windows"][window] + settings.search_config["grace_hours"]
+    cfg = settings.search_config
+    # Never look further back than the hard age cap, whatever the window plus grace add up to.
+    hours = min(cfg["windows"][window] + cfg["grace_hours"], cfg["max_posting_age_days"] * 24)
     return datetime.now(timezone.utc) - timedelta(hours=hours)
 
 
@@ -205,7 +207,7 @@ def fetch_and_prefilter(companies: list[CompanyConfig], since: datetime, applied
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sources", default="ats")
-    parser.add_argument("--window", default="24h", choices=["24h", "7d"])
+    parser.add_argument("--window", default="24h", choices=["24h", "7d", "14d"])
     parser.add_argument("--limit-companies", type=int, default=None)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--score", action="store_true")

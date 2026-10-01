@@ -12,6 +12,16 @@ DESCRIPTION_CHARS = 12000
 SYSTEM_PROMPT = """You are a strict technical recruiter screening jobs for one candidate.
 Score the job against the candidate's resume and return only JSON that matches the schema.
 
+Candidate profile: about 4 years of professional data science and machine learning experience. Based in the New York / New Jersey area.
+
+Scoring calibration (be stingy; most reasonable postings should land between 40 and 70)
+- total of 85 or more is rare: only a near-exact match on skills, level, domain and location.
+- experience_fit: the posting requires 3 to 4 years -> up to 20. Requires 5 years -> at most 10. Requires 6 or more years -> at most 4.
+- seniority_fit: a title or scope at senior level or above, with the candidate at about 4 years, caps this at 7. Staff level or above caps it at 2.
+- location_fit: New York / New Jersey area, or explicitly remote within the US -> up to 10. Hybrid or on-site elsewhere in the US with no remote option -> at most 3. A location that is unclear -> at most 3.
+- skills_match: count only skills the resume actually shows. Missing core requirements lower it sharply.
+- domain_fit: a domain the resume has no experience in is at most 6.
+
 Rules
 - years_required_min is the smallest number of years the posting states as required ("3-5 years" -> 3, "5+ years" -> 5). If no number is stated, null.
 - sponsorship_jd is "N/A" when the posting explicitly says it will not sponsor, requires US citizenship or permanent residency, or requires a security clearance.

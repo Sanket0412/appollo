@@ -1,7 +1,9 @@
 windows:            # --window value -> hours
   24h: 24
   7d: 168
+  14d: 336
 grace_hours: 2      # added to every fetch window; dedup removes overlap
+max_posting_age_days: 14   # hard cap: a job must have a known posted date within this many days, any window
 
 titles:
   include:          # case-insensitive regexes; at least one must match
@@ -56,7 +58,7 @@ locations:
     - 'white plains'
     - 'stamford'
     - 'greenwich'
-  unclear_remote_policy: keep   # remote with no country: keep and let Haiku judge location_fit
+  unclear_remote_policy: skip   # no location, or no clear US signal (including remote with no country): skip. Decided 2026-10-01.
 
 red_flags:          # hard exclude when found in the description, case-insensitive
   - 'must be (a )?u\.?s\.? citizen'
@@ -121,9 +123,9 @@ jobspy:
 
 scoring:
   model: claude-haiku-4-5-20251001
-  min_similarity: 0.55          # tune at Step 7
+  min_similarity: 0.50          # chosen at Step 7 (2026-10-01); raise once irrelevant titles appear in larger runs
   max_per_run: 60
-  max_yoe_required: 6
+  max_yoe_required: 5           # exclude when years_required_min > this, i.e. skip 6+ (candidate has about 4 years)
   batch_wait_minutes: 25
   fallback_sync: true
 

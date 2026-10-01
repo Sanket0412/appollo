@@ -80,9 +80,29 @@ def score_candidates(candidates: list[Candidate], resume: str) -> list[Scored]:
     return [Scored(c, v, float(s)) for c, v, s in zip(candidates, job_vecs, sims)]
 
 
+STALE_SQL = """
+update public.jobs set status = 'excluded', exclude_reason = 'stale', description = null
+where status in ('new', 'shortlisted')
+  and (posted_at is null or posted_at < now() - make_interval(days => %s))
+"""
+
+
+def expire_stale(conn) -> int:
+    """Rows age while waiting; anything past the hard age cap (or with no posted date) is dropped."""
+    days = get_settings().search_config["max_posting_age_days"]
+    with conn.cursor() as cur:
+        cur.execute(STALE_SQL, (days,))
+        n = cur.rowcount
+    conn.commit()
+    return n
+
+
 def run_embedding_stage(conn, min_similarity: float | None = None) -> dict:
     """Embeds every status='new' job and moves it to shortlisted or not_shortlisted."""
     cfg = get_settings().search_config["scoring"]
+    expired = expire_stale(conn)
+    if expired:
+        log.info("Expired %d stale row(s) past the age cap", expired)
     threshold = cfg["min_similarity"] if min_similarity is None else min_similarity
 
     with conn.cursor() as cur:

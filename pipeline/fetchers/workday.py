@@ -30,6 +30,19 @@ def _parse_posted_on(text: str | None, now: datetime) -> datetime | None:
     return None
 
 
+_N_LOCATIONS_RE = re.compile(r"^\d+\s+locations?$", re.IGNORECASE)
+
+
+def _resolve_location(list_text: str | None, detail: dict) -> str | None:
+    """List payloads sometimes omit locationsText or say "2 Locations"; the detail payload has the
+    real location and a country, which is what decides is_us downstream."""
+    text = list_text if list_text and not _N_LOCATIONS_RE.match(list_text.strip()) else detail.get("location")
+    country = (detail.get("country") or {}).get("descriptor")
+    if country and (not text or country.lower() not in text.lower()):
+        text = f"{text}, {country}" if text else country
+    return text or None
+
+
 def fetch(company: CompanyConfig, since: datetime) -> list[RawJob]:
     settings = get_settings()
     titles_cfg = settings.search_config["titles"]
@@ -72,7 +85,7 @@ def fetch(company: CompanyConfig, since: datetime) -> list[RawJob]:
                         ats_job_id=detail.get("id") or external_path,
                         company=company.name,
                         title=title,
-                        location=posting.get("locationsText"),
+                        location=_resolve_location(posting.get("locationsText"), detail),
                         url=detail.get("externalUrl") or f"https://{company.host}/{company.board}{external_path}",
                         posted_at=posted_at,
                         description_html=description_html,

@@ -55,10 +55,11 @@ def evaluate(
     if not job.is_us:
         return False, "not_us"
 
+    # A known posted date is required from every source (decided 2026-10-01): only jobs
+    # guaranteed to be recent are kept.
     if job.posted_at is None:
-        if not is_jobspy:
-            return False, "no_posted_at"
-    elif job.posted_at < since:
+        return False, "no_posted_at"
+    if job.posted_at < since:
         return False, "stale"
 
     blocklist_norm = {normalize_company(n) for n in staffing_config["company_blocklist"]}

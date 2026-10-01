@@ -80,9 +80,14 @@ def test_parse_location_non_us():
     assert (is_us, is_remote, is_nyc) == (False, False, False)
 
 
-def test_parse_location_empty_defaults_to_us():
+def test_parse_location_empty_is_not_us():
     is_us, is_remote, is_nyc = parse_location(None, LOCATIONS_CONFIG)
-    assert (is_us, is_remote, is_nyc) == (True, False, False)
+    assert (is_us, is_remote, is_nyc) == (False, False, False)
+
+
+def test_parse_location_remote_without_country_is_not_us():
+    is_us, is_remote, _ = parse_location("Remote", LOCATIONS_CONFIG)
+    assert (is_us, is_remote) == (False, True)
 
 
 def test_parse_location_state_abbreviation():

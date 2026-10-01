@@ -104,11 +104,9 @@ def parse_location(raw: str | None, locations_config: dict) -> tuple[bool, bool,
         re.search(rf"\b{re.escape(state)}\b", text.upper()) for state in locations_config["us_states"]
     ):
         is_us = True
-    elif not text:
-        # No location at all: keep, per search.yaml's unclear_remote_policy, and let Haiku's
-        # location_fit judge it later rather than silently dropping the job here.
-        is_us = True
     else:
+        # No location, or no clear US signal (incl. remote with no country): skip, per
+        # search.yaml's unclear_remote_policy.
         is_us = False
 
     return is_us, is_remote, is_nyc_metro

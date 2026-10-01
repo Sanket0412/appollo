@@ -116,9 +116,9 @@ def test_ats_job_with_missing_posted_at_is_excluded():
     assert (keep, reason) == (False, "no_posted_at")
 
 
-def test_jobspy_job_with_missing_posted_at_is_kept():
+def test_jobspy_job_with_missing_posted_at_is_excluded():
     keep, reason = evaluate_job(make_job(posted_at=None), is_jobspy=True)
-    assert (keep, reason) == (True, None)
+    assert (keep, reason) == (False, "no_posted_at")
 
 
 def test_excludes_staffing_company_blocklist():

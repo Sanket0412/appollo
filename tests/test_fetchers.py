@@ -127,3 +127,18 @@ def test_workday_respects_since_window(monkeypatch):
     jobs = workday.fetch(company, since=future)
 
     assert jobs == []
+
+
+def test_workday_location_falls_back_to_detail_and_appends_country():
+    detail = {"location": "Pune, PDC2C", "country": {"descriptor": "India"}}
+    assert workday._resolve_location(None, detail) == "Pune, PDC2C, India"
+    assert workday._resolve_location("2 Locations", detail) == "Pune, PDC2C, India"
+
+
+def test_workday_location_keeps_list_text_when_country_already_in_it():
+    detail = {"location": "x", "country": {"descriptor": "United States of America"}}
+    assert workday._resolve_location("New York, United States of America", detail) == "New York, United States of America"
+
+
+def test_workday_location_none_when_nothing_known():
+    assert workday._resolve_location(None, {}) is None

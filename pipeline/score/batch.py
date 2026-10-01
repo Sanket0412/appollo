@@ -106,8 +106,9 @@ def load_shortlisted(conn, exclude_ids: set[str], limit: int) -> list[Job]:
         cur.execute(
             "select id, company, title, location, description from public.jobs "
             "where status = 'shortlisted' and not (id = any(%s)) "
+            "and posted_at >= now() - make_interval(days => %s) "
             "order by is_nyc_metro desc, similarity desc nulls last limit %s",
-            (list(exclude_ids), limit),
+            (list(exclude_ids), get_settings().search_config["max_posting_age_days"], limit),
         )
         return [Job(*r) for r in cur.fetchall()]
 
