@@ -12,6 +12,41 @@ from pipeline.text_utils import normalize_company, title_norm
 
 FUZZY_TITLE_THRESHOLD = 90
 
+# "5+ years of experience", "3-5 years' relevant experience", "minimum of 6 years", "at least 7 years".
+_YEARS_EXPERIENCE_RE = re.compile(
+    r"(\d{1,2})\s*(?:\+|plus)?\s*(?:(?:-|\u2013|to)\s*\d{1,2}\s*\+?\s*)?years?\b[^.\n]{0,60}?\bexperience",
+    re.IGNORECASE,
+)
+_YEARS_MINIMUM_RE = re.compile(r"(?:minimum|at least|min\.?)\s+(?:of\s+)?(\d{1,2})\s*\+?\s*years?\b", re.IGNORECASE)
+_OPTIONAL_RE = re.compile(r"\bprefer(?:red|ably)?\b|nice to have|\bbonus\b|\ba plus\b", re.IGNORECASE)
+
+
+def _sentence_around(text: str, start: int, end: int) -> str:
+    left = max(text.rfind("\n", 0, start), text.rfind(". ", 0, start))
+    rights = [i for i in (text.find("\n", end), text.find(". ", end)) if i != -1]
+    return text[left + 1 : min(rights) if rights else len(text)]
+
+
+def min_years_required(description: str | None) -> int | None:
+    """Smallest years-of-experience figure the posting states as required, or None when it states none.
+
+    Taking the smallest figure across all statements is deliberate: a posting that lists "3+ years
+    Python" next to "7+ years in the industry" only truly requires 3. Statements marked preferred /
+    bonus / nice to have are ignored.
+    """
+    if not description:
+        return None
+    found: list[int] = []
+    for regex in (_YEARS_EXPERIENCE_RE, _YEARS_MINIMUM_RE):
+        for m in regex.finditer(description):
+            if _OPTIONAL_RE.search(_sentence_around(description, m.start(), m.end())):
+                continue
+            years = int(m.group(1))
+            if 0 < years <= 30:
+                found.append(years)
+    return min(found) if found else None
+
+
 
 class AppliedHistory:
     """Precomputed lookup for public.applied_history, grouped by company so the fuzzy title
@@ -43,6 +78,7 @@ def evaluate(
     staffing_config: dict,
     red_flags: list[str],
     applied_history: AppliedHistory,
+    max_yoe: int | None = None,
 ) -> tuple[bool, str | None]:
     includes = titles_config.get("include", [])
     excludes = titles_config.get("exclude", [])
@@ -72,6 +108,11 @@ def evaluate(
 
     if any(re.search(pat, description, re.IGNORECASE) for pat in red_flags):
         return False, "red_flag_description"
+
+    if max_yoe is not None:
+        years = min_years_required(description)
+        if years is not None and years > max_yoe:
+            return False, "yoe_too_high"
 
     if applied_history.matches(job.company_norm, job.title):
         return False, "already_applied"

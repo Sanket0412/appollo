@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-from pipeline.filters.prefilter import AppliedHistory, evaluate
+import pytest
+
+from pipeline.filters.prefilter import AppliedHistory, evaluate, min_years_required
 from pipeline.models import Job
 
 TITLES_CONFIG = {
@@ -74,7 +76,7 @@ def make_job(**overrides) -> Job:
     return Job(**defaults)
 
 
-def evaluate_job(job: Job, *, is_jobspy: bool = False, applied_history: AppliedHistory | None = None):
+def evaluate_job(job: Job, *, is_jobspy: bool = False, applied_history: AppliedHistory | None = None, max_yoe: int | None = None):
     return evaluate(
         job,
         since=SINCE,
@@ -83,6 +85,7 @@ def evaluate_job(job: Job, *, is_jobspy: bool = False, applied_history: AppliedH
         staffing_config=STAFFING_CONFIG,
         red_flags=RED_FLAGS,
         applied_history=applied_history or AppliedHistory.empty(),
+        max_yoe=max_yoe,
     )
 
 
@@ -168,3 +171,31 @@ def test_check_order_title_wins_before_staffing_or_red_flags():
     # title checks run first.
     keep, reason = evaluate_job(make_job(title="Backend Engineer", company_norm="robert half"))
     assert (keep, reason) == (False, "title_no_match")
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Requires 6+ years of experience in ML.", 6),
+    ("8-10 years of relevant experience", 8),
+    ("Minimum of 7 years in data science", 7),
+    ("At least 5 years building models", 5),
+    ("3+ years Python experience. 7+ years of industry experience.", 3),
+    ("Bachelor's + 3 years; Master's + 1 year of experience; or 5 years of experience", 3),
+    ("5+ years of experience preferred", None),
+    ("Nice to have: 8 years of experience with Spark", None),
+    ("We were founded 15 years ago and love data.", None),
+    ("", None),
+    (None, None),
+])
+def test_min_years_required(text, expected):
+    assert min_years_required(text) == expected
+
+
+def test_prefilter_excludes_when_all_stated_years_exceed_the_limit():
+    job = make_job(description="You have 7+ years of experience in machine learning.")
+    keep, reason = evaluate_job(job, max_yoe=5)
+    assert (keep, reason) == (False, "yoe_too_high")
+
+
+def test_prefilter_keeps_exactly_the_limit_and_no_stated_years():
+    assert evaluate_job(make_job(description="5+ years of experience in ML."), max_yoe=5) == (True, None)
+    assert evaluate_job(make_job(description="Build models."), max_yoe=5) == (True, None)

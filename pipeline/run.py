@@ -167,6 +167,7 @@ def fetch_and_prefilter(companies: list[CompanyConfig], since: datetime, applied
     staffing_cfg = settings.search_config["staffing"]
     red_flags = settings.search_config["red_flags"]
     locations_cfg = settings.search_config["locations"]
+    max_yoe = settings.search_config["scoring"]["max_yoe_required"]
 
     jobs: list[Job] = []
     for company in companies:
@@ -192,6 +193,7 @@ def fetch_and_prefilter(companies: list[CompanyConfig], since: datetime, applied
                 staffing_config=staffing_cfg,
                 red_flags=red_flags,
                 applied_history=applied_history,
+                max_yoe=max_yoe,
             )
             if keep:
                 job = apply_lca(job)

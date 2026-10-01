@@ -32,6 +32,8 @@ Tell Claude Code your answer in conversation; it will update the "Answer" column
 
 **Fit score formula (2026-10-01).** `fit_score` = skills_match (0-40) + experience_fit (0-20) + domain_fit (0-15) + location_fit (0-10), all judged by Haiku (max 85), plus recency (0-15) computed in code from `posted_at`: 15 points for a job posted just now, falling linearly to 0 at the 14-day cap (`scoring.recency_max_points`). `seniority_fit` was dropped at Sanket's request because years required already drives experience_fit. Recency is fixed at scoring time, so it can be a point or two stale by digest time; the digest sorts by `posted_at` directly.
 
+**Hard YOE filter before scoring (2026-10-01).** `prefilter.min_years_required()` pulls the years-of-experience figures out of the description (patterns like "6+ years of experience", "8-10 years", "minimum of 7 years"), ignores sentences marked preferred, bonus or nice to have, and takes the smallest figure, since a posting asking for "3+ years Python" and "7+ years in the industry" really requires 3. If that figure is above `scoring.max_yoe_required` (5, so 6+ is out) the job is excluded as `yoe_too_high` before embedding or Haiku, so it costs nothing and never gets a fit score. Haiku's own `years_required_min` check after scoring stays as a backstop for postings the regex misses. Checked read-only against 24 stored descriptions; it matched Haiku wherever both had a figure and missed one (BMS, 5).
+
 ## Open questions for after Step 4
 
 - **SmartRecruiters fetcher.** SmartRecruiters has a public postings API that could widen ATS coverage beyond Greenhouse/Lever/Ashby/Workday. Verify the current API shape before building; not scheduled yet.
