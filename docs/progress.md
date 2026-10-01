@@ -38,7 +38,7 @@ marking anything digested, and the first manual GitHub Actions run in Step 11.
 | 4 | ATS fetchers | **Done**, committed and pushed | — |
 | 5 | Prefilter, dedup, run orchestrator | **Done**, committed and pushed | — |
 | 7 | Embeddings and shortlist | **Built and tested**, committed; waiting on Sanket's `min_similarity` choice | Threshold decision (see below) |
-| 8 | Haiku rubric via Batches API | Not started | Step 7 |
+| 8 | Haiku rubric via Batches API | **Built and tested**, committed; waiting on Sanket's review of two sample scores | Sample-score review, and the `min_similarity` choice from Step 7 |
 | 9 | Ranking and digest | Not started | Step 8. Ranking formula already updated (no_signal_penalty removed; NULL vs 0 distinction) in `search.yaml`/`BUILD_PLAN.md`, implementation pending. |
 | 11 | GitHub Actions | Not started | Step 9; GitHub Secrets already configured by Sanket |
 | 6 | JobSpy fetcher, local schedule, auto-discovery (source G) | Not started | Step 5. `jobspy.sites` already updated to `[indeed, linkedin, google, glassdoor, zip_recruiter]` in `search.yaml`, verified against installed python-jobspy 1.1.82. |
@@ -79,4 +79,7 @@ See [DECISIONS.md](./DECISIONS.md) for resolved decisions and open questions (Sm
 - **2026-09-30** — Step 7 built and tested: `pipeline/score/embed.py` (fastembed `BAAI/bge-small-en-v1.5`, cache under `data/cache/fastembed` or `FASTEMBED_CACHE_PATH`, resume embedded once, job text = title + company + first 2,000 description chars, cosine similarity, shortlist capped at `max_per_run` with NYC metro first), `--score --no-llm` wired into `pipeline/run.py` (top-10 titles printed locally only, never in CI), `tests/test_embed.py`. No schema change. Verified `TextEmbedding(model_name, cache_dir=...)` against installed fastembed 0.8.1. Live run on the 25 `new` rows: similarity ranged 0.546 to 0.702; at the current `min_similarity: 0.55`, 24 shortlisted and 1 not (Accenture "AI Engineer", 0.546, arguably relevant).
   - **Stop point, threshold.** The sample is too small and too clean to calibrate; every title was relevant, so nothing here argues for a higher cutoff. `min_similarity` is unchanged at 0.55 pending Sanket's choice.
 
-**Resume point if this session ends here:** Steps 1-5 and 7 are committed. Next is Step 8 (Haiku rubric), after Sanket picks the Step 7 threshold. Step 8 needs `ANTHROPIC_API_KEY` in `.env`.
+- **2026-10-01** — Step 8 built and tested: `pipeline/score/rubric.py` (prompt, schema, `ScoreResult` with recomputed `total`, verbatim-evidence check), `pipeline/score/batch.py` (collect earlier batches, submit, poll, write scores, cancel plus sync fallback, cost tally; logs counts and cost only), `--score` now runs it unless `--no-llm`, `--max-score N`, `tests/test_rubric.py`. API deviations are in `DECISIONS.md`. Live run with `--max-score 5`: 4 scored, 1 excluded `yoe_too_high`, 0 evidence violations, about $0.0115 for 5 jobs (about $0.0023 per job at batch prices). The sponsorship `N/A` path and verbatim evidence were exercised by a synchronous test call, not yet by a real posting.
+  - **Env check.** `ANTHROPIC_API_KEY`, `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD` are set; `DIGEST_TO` is still empty in `.env`.
+
+**Resume point if this session ends here:** Steps 1-5, 7 and 8 are committed. Next is Step 9 (ranking and digest), after Sanket reviews the Step 8 sample scores and picks the Step 7 threshold. Step 9 needs `DIGEST_TO` in `.env`.

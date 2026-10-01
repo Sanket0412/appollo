@@ -1,13 +1,13 @@
 """Pipeline CLI.
 
 python -m pipeline.run --sources ats[,jobspy] --window 24h|7d
-                       [--score [--no-llm]] [--digest] [--email]
+                       [--score [--no-llm] [--max-score N]] [--digest] [--email]
                        [--limit-companies N] [--dry-run]
 
 Stages: fetch, normalize, prefilter, dedup, upsert, then an LCA join for kept rows, then (--score)
-the embedding shortlist. --no-llm stops after the embedding stage. The Haiku rubric (Step 8), digest
-(Step 9) and JobSpy (Step 6) aren't built yet; --digest/--email/--sources jobspy log a warning and
-are otherwise a no-op.
+the embedding shortlist, then the Haiku rubric via the Batches API (--max-score N caps it).
+--no-llm stops after the embedding stage. Digest (Step 9) and JobSpy (Step 6) aren't built yet;
+--digest/--email/--sources jobspy log a warning and are otherwise a no-op.
 """
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from pipeline.filters import prefilter
 from pipeline.filters.dedup import ATS_SOURCES, canonical_id, source_priority
 from pipeline.log import get_logger
 from pipeline.models import CompanyConfig, Job, RawJob
+from pipeline.score import batch as score_batch
 from pipeline.score import embed
 from pipeline.settings import REPO_ROOT, get_settings, is_ci
 from pipeline.sponsorship.employer_match import match_employer
@@ -209,6 +210,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--score", action="store_true")
     parser.add_argument("--no-llm", action="store_true", help="with --score, stop after the embedding stage")
+    parser.add_argument("--max-score", type=int, default=None, help="with --score, cap how many jobs go to Haiku")
     parser.add_argument("--digest", action="store_true")
     parser.add_argument("--email", action="store_true")
     args = parser.parse_args()
@@ -216,8 +218,6 @@ def main() -> None:
     sources = [s.strip() for s in args.sources.split(",") if s.strip()]
     if "jobspy" in sources:
         log.warning("--sources jobspy: JobSpy fetcher is not built yet (Step 6); ignoring")
-    if args.score and not args.no_llm:
-        log.warning("Haiku scoring is not built yet (Step 8); stopping after the embedding stage")
     if args.digest or args.email:
         log.warning("--digest/--email are not built yet (Step 9); ignoring")
 
@@ -264,6 +264,8 @@ def main() -> None:
                 counts.update(embed.run_embedding_stage(conn))
                 if not is_ci():
                     _print_top_shortlisted(conn)
+                if not args.no_llm:
+                    counts.update({f"score_{k}": v for k, v in score_batch.run_scoring_stage(conn, args.max_score).items()})
 
             with conn.cursor() as cur:
                 cur.execute("update public.runs set counts = %s where id = %s", (json.dumps(counts), run_id))
