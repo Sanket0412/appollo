@@ -40,7 +40,7 @@ marking anything digested, and the first manual GitHub Actions run in Step 11.
 | 7 | Embeddings and shortlist | **Built and tested**, committed; waiting on Sanket's `min_similarity` choice | Threshold decision (see below) |
 | 8 | Haiku rubric via Batches API | **Built and tested**, committed; waiting on Sanket's review of two sample scores | Sample-score review, and the `min_similarity` choice from Step 7 |
 | 9 | Ranking and digest | **Built and tested**, first digest written, awaiting Sanket's review before anything is marked digested | Digest review; `cap_exempt` tag needs a migration decision |
-| 11 | GitHub Actions | Not started | Step 9; GitHub Secrets already configured by Sanket |
+| 11 | GitHub Actions | **Built and pushed**, awaiting Sanket's first manual run | Sanket triggers `daily-job-scan` from the Actions tab with `window=24h` |
 | 6 | JobSpy fetcher, local schedule, auto-discovery (source G) | Not started | Step 5. `jobspy.sites` already updated to `[indeed, linkedin, google, glassdoor, zip_recruiter]` in `search.yaml`, verified against installed python-jobspy 1.1.82. |
 | 10 | Tracker import/export and mark_applied | Not started | Step 9; Sanket has no tracker file yet — `import_tracker.py` must handle a missing file gracefully |
 | 12 | Review console and assisted apply | Not started | Step 11; Supabase MCP server details |
@@ -89,4 +89,6 @@ See [DECISIONS.md](./DECISIONS.md) for resolved decisions and open questions (Sm
 
 - **2026-10-01** — Distance-based location scoring and the DC / Philadelphia corridor group added (`pipeline/geo.py`, `search.yaml > geo`, details in `DECISIONS.md`); 158 tests pass. Re-scored all 13 scored rows ($0.03) and regenerated `data/digests/2026-10-01.md` with `--no-mark`: 12 roles (3 NYC metro, 1 corridor, 8 elsewhere). Nothing marked digested or emailed yet. Finding: Haiku's skills/experience/domain part is still generous (Walmart postings at 64 to 72 of 75 despite the "most land between 25 and 50" calibration).
 
-**Resume point if this session ends here:** Steps 1-5 and 7-9 are committed. Waiting on Sanket's review of the first digest (`data/digests/2026-10-01.md`); after that, mark it digested and send the first email, then Step 11 (GitHub Actions).
+- **2026-10-01** — Sanket's decisions applied. Migration 002 (`cap_exempt`) applied and populated; first digest emailed to `DIGEST_TO` and its 12 rows marked digested (run 11). Scoring changed to evidence-based skills (see `DECISIONS.md`) and evaluated read-only on 13 jobs; `min_core_fit` unchanged at 50. Step 11 built: `.github/workflows/daily-job-scan.yml` (10:00 America/New_York, `workflow_dispatch` with 24h/7d/14d) and `.github/workflows/tests.yml`; 165 tests pass from a clean checkout. Pipeline logs counts only in CI.
+
+**Resume point if this session ends here:** Steps 1-5, 7-9 and 11 are committed. Waiting on Sanket to trigger the first manual `daily-job-scan` run (stop rule) and to pick `min_core_fit` after the scoring evaluation. Then Step 6 (JobSpy), 10 (tracker), 12 (review console).

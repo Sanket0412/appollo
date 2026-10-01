@@ -1,0 +1,49 @@
+name: daily-job-scan
+
+# The repo is public, so this workflow must never print job titles, companies, links, resume text or
+# the digest. The pipeline logs counts only when GITHUB_ACTIONS=true; keep it that way.
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+      timezone: "America/New_York"   # documented in GitHub's workflow syntax reference
+  workflow_dispatch:
+    inputs:
+      window:
+        description: "Posting age window"
+        type: choice
+        options: ["24h", "7d", "14d"]
+        default: "24h"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-job-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/fastembed
+          key: fastembed-bge-small-en-v1.5
+      - run: pip install -r requirements.txt
+      - name: Run pipeline
+        run: python -m pipeline.run --sources ats --window ${{ inputs.window || '24h' }} --score --digest --email
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RESUME_TEXT: ${{ secrets.RESUME_TEXT }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          DIGEST_TO: ${{ secrets.DIGEST_TO }}
+          FASTEMBED_CACHE_PATH: ~/.cache/fastembed
