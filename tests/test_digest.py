@@ -158,3 +158,11 @@ def test_email_skipped_without_credentials(monkeypatch):
 
     monkeypatch.setattr(emailer, "get_settings", lambda: S())
     assert emailer.send_digest(_result()) is False
+
+
+def test_cap_exempt_tag_in_markdown_and_html():
+    grouped = group_jobs([make(cap_exempt=True)])
+    assert "[Cap-exempt]" in render_markdown(grouped, NOW)
+    assert "[Cap-exempt]" in render_html(grouped, NOW)
+    plain = group_jobs([make(cap_exempt=False)])
+    assert "Cap-exempt" not in render_markdown(plain, NOW)

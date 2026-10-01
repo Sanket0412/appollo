@@ -92,6 +92,24 @@ def apply_lca(job: Job) -> Job:
     )
 
 
+def sync_cap_exempt(conn, companies: list[CompanyConfig]) -> int:
+    """Makes jobs.cap_exempt match companies.yaml: true for jobs at cap_exempt companies, false otherwise.
+
+    Runs every time (one cheap statement), so it also backfills rows stored before the flag existed and
+    follows a company being added to or removed from the cap-exempt list.
+    """
+    exempt = sorted({normalize_company(c.name) for c in companies if c.cap_exempt})
+    with conn.cursor() as cur:
+        cur.execute(
+            "update public.jobs set cap_exempt = (company_norm = any(%s)) "
+            "where cap_exempt is distinct from (company_norm = any(%s))",
+            (exempt, exempt),
+        )
+        changed = cur.rowcount
+    conn.commit()
+    return changed
+
+
 def load_applied_history(conn) -> prefilter.AppliedHistory:
     with conn.cursor() as cur:
         cur.execute("select company_norm, title_norm from public.applied_history")
@@ -268,6 +286,7 @@ def main() -> None:
 
         try:
             applied_history = load_applied_history(conn)
+            sync_cap_exempt(conn, companies)
             jobs = fetch_and_prefilter(companies, since, applied_history)
             jobs = dedup_batch(jobs)
 

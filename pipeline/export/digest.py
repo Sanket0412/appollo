@@ -43,11 +43,12 @@ class DigestJob:
     core_fit: int
     summary: str | None
     url: str
+    cap_exempt: bool = False
 
 
 SELECT_SQL = """
 select id, company, title, location, is_nyc_metro, is_remote, posted_at, yoe_min, yoe_text,
-       sponsorship_jd, sponsorship_evidence, lca_filings, lca_relevant_soc, fit_score, summary, url
+       sponsorship_jd, sponsorship_evidence, lca_filings, lca_relevant_soc, fit_score, summary, url, cap_exempt
 from public.jobs
 where status = 'scored'
   and rank_score is not null
@@ -120,6 +121,10 @@ def lca_label(job: DigestJob) -> str:
     return f"{job.lca_filings} LCA filings, {job.lca_relevant_soc or 0} in relevant SOC codes"
 
 
+def title_line(job: DigestJob) -> str:
+    return f"{job.company} - {job.title}" + (" [Cap-exempt]" if job.cap_exempt else "")
+
+
 def fit_label(job: DigestJob, now: datetime) -> str:
     rec, total = display_fit(job.core_fit, job.posted_at, now)
     return f"{total}/100 (core {job.core_fit}/85 + recency {rec}/15)"
@@ -135,7 +140,7 @@ def render_markdown(grouped: dict[str, list[DigestJob]], now: datetime) -> str:
         lines += [f"## {group} ({len(jobs)})", ""]
         for i, j in enumerate(jobs, 1):
             lines += [
-                f"### {i}. {j.company} - {j.title}",
+                f"### {i}. {title_line(j)}",
                 f"- Location: {j.location or 'Not stated'} ({posted_age(j.posted_at, now)})",
                 f"- Fit: {fit_label(j, now)}",
                 f"- Years required: {yoe_label(j)}",
@@ -166,7 +171,7 @@ def render_html(grouped: dict[str, list[DigestJob]], now: datetime) -> str:
         )
         for i, j in enumerate(jobs, 1):
             parts.append(
-                f"<tr><td>{i}</td><td>{e(j.company)}</td><td>{e(j.title)}</td><td>{e(j.location or '')}</td>"
+                f"<tr><td>{i}</td><td>{e(j.company)}</td><td>{e(j.title)}{' <b>[Cap-exempt]</b>' if j.cap_exempt else ''}</td><td>{e(j.location or '')}</td>"
                 f"<td>{e(posted_age(j.posted_at, now))}</td><td>{e(fit_label(j, now))}</td><td>{e(yoe_label(j))}</td>"
                 f"<td>{e(sponsorship_label(j))}</td><td>{e(lca_label(j))}</td><td>{e(j.summary or '')}</td>"
                 f'<td><a href="{e(j.url, quote=True)}">Apply</a></td></tr>'
