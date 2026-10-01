@@ -14,13 +14,49 @@ from pipeline.score.rubric import (
 GOOD = {
     "years_required_min": 3, "years_required_text": "3+ years", "seniority": "mid",
     "sponsorship_jd": "Not Mentioned", "sponsorship_evidence": "",
-    "skills_match": 30, "experience_fit": 15, "domain_fit": 10,
-    "total": 99, "one_line_summary": "Builds ranking models in Python.", "red_flags": [],
+    "required_skills": ["python", "sql", "pytorch", "airflow"], "matched_skills": ["python", "sql", "pytorch"],
+    "experience_fit": 15, "domain_fit": 10,
+    "total": 99, "skills_match": 99, "one_line_summary": "Builds ranking models in Python.", "red_flags": [],
 }
 
 
-def test_total_is_recomputed_from_parts():
-    assert ScoreResult(**GOOD).total == 55
+def test_skills_score_is_computed_from_the_lists_not_the_models_number():
+    r = ScoreResult(**GOOD)
+    assert r.skills_match == 30  # round(40 * 3 / 4); the model's "99" is ignored
+    assert r.total == 55  # 30 + 15 + 10
+
+
+def test_no_required_skills_scores_zero_skills():
+    r = ScoreResult(**{**GOOD, "required_skills": [], "matched_skills": []})
+    assert r.skills_match == 0
+
+
+def test_all_matched_gives_full_skills_points():
+    r = ScoreResult(**{**GOOD, "matched_skills": ["python", "sql", "pytorch", "airflow"]})
+    assert r.skills_match == 40
+
+
+def test_matched_must_be_a_subset_of_required():
+    with pytest.raises(ValidationError):
+        ScoreResult(**{**GOOD, "matched_skills": ["python", "rust"]})
+
+
+def test_subset_check_ignores_case_and_spacing_and_duplicates():
+    r = ScoreResult(**{**GOOD, "required_skills": ["Python", "SQL"], "matched_skills": [" python ", "PYTHON", "sql"]})
+    assert r.skills_match == 40
+
+
+def test_more_than_twelve_required_skills_rejected():
+    many = [f"skill{i}" for i in range(13)]
+    with pytest.raises(ValidationError):
+        ScoreResult(**{**GOOD, "required_skills": many, "matched_skills": []})
+
+
+def test_experience_fit_capped_at_ten_when_five_years_required():
+    assert ScoreResult(**{**GOOD, "years_required_min": 5, "experience_fit": 20}).experience_fit == 10
+    assert ScoreResult(**{**GOOD, "years_required_min": 4, "experience_fit": 20}).experience_fit == 20
+    assert ScoreResult(**{**GOOD, "years_required_min": 5, "experience_fit": 6}).experience_fit == 6
+    assert ScoreResult(**{**GOOD, "years_required_min": None, "experience_fit": 20}).experience_fit == 20
 
 
 def test_null_years_allowed():
@@ -28,8 +64,7 @@ def test_null_years_allowed():
 
 
 @pytest.mark.parametrize("field,value", [
-    ("skills_match", 41), ("experience_fit", 21), ("domain_fit", 16),
-    ("skills_match", -1),
+    ("experience_fit", 21), ("domain_fit", 16), ("experience_fit", -1),
 ])
 def test_part_ranges_enforced(field, value):
     with pytest.raises(ValidationError):
@@ -49,9 +84,14 @@ def test_parse_result_rejects_invalid_json():
 def test_api_schema_has_no_integer_bounds_but_keeps_ranges_in_descriptions():
     schema = api_schema()
     assert all("minimum" not in p and "maximum" not in p for p in schema["properties"].values())
-    assert schema["properties"]["skills_match"]["description"] == "Integer from 0 to 40."
+    assert schema["properties"]["experience_fit"]["description"] == "Integer from 0 to 20."
     # the spec schema itself is untouched
-    assert rubric.SCHEMA["properties"]["skills_match"]["maximum"] == 40
+    assert rubric.SCHEMA["properties"]["experience_fit"]["maximum"] == 20
+
+
+def test_skills_match_is_not_asked_of_the_model():
+    assert "skills_match" not in rubric.SCHEMA["properties"]
+    assert {"required_skills", "matched_skills"} <= set(rubric.SCHEMA["required"])
 
 
 def test_evidence_verbatim_ignores_whitespace_and_case():
