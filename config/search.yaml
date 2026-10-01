@@ -107,6 +107,19 @@ staffing:
     - '\bc2c\b|corp[- ]to[- ]corp'
     - '\bstaffing (agency|firm|partner)\b'
 
+geo:
+  # Straight-line (great-circle) distance, not driving distance. City coordinates are offline (geonamescache).
+  hubs:
+    nyc: {lat: 40.7128, lon: -74.0060}
+    dc: {lat: 38.9072, lon: -77.0369}
+    philadelphia: {lat: 39.9526, lon: -75.1652}
+  score_hubs: [nyc, dc]        # location score uses the nearer of these (decided 2026-10-01: nearest hub)
+  full_points_miles: 25        # 10 points at or inside this distance
+  zero_points_miles: 250       # 0 points at or beyond this distance; linear in between
+  nyc_metro_miles: 50          # digest group "NYC metro": within this many miles of NYC
+  corridor_hubs: [dc, philadelphia]
+  corridor_miles: 50           # digest group "DC / Philadelphia corridor": within this of D.C. or Philadelphia
+
 lca:
   relevant_soc: ['15-2051', '15-1221', '15-1252']   # Data Scientists, Computer and Information Research Scientists, Software Developers
   fuzzy_threshold: 90
@@ -123,6 +136,7 @@ jobspy:
 
 scoring:
   model: claude-haiku-4-5-20251001
+  location_max_points: 10       # location part of core fit, computed in code from geo.* (Haiku no longer scores location)
   recency_max_points: 15        # shown in the digest: full points when posted just now, 0 at max_posting_age_days. Not part of core fit.
   min_similarity: 0.50          # chosen at Step 7 (2026-10-01); raise once irrelevant titles appear in larger runs
   max_per_run: 60

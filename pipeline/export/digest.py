@@ -1,7 +1,7 @@
 """Step 9: build the daily digest from scored jobs.
 
 Selection: status 'scored', core fit at or above digest.min_core_fit, posted within the age cap, the top
-digest.max_jobs by rank_score (newest first). Grouping: NYC metro, Remote US, Elsewhere US, each in rank
+digest.max_jobs by rank_score (newest first). Grouping: NYC metro, DC / Philadelphia corridor, Remote US, Elsewhere US, each in rank
 order. Output is a local markdown file under data/digests/ (gitignored); titles, companies and links are
 never logged.
 """
@@ -13,12 +13,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from pipeline import geo
 from pipeline.log import get_logger
 from pipeline.score.rank import display_fit, update_rank_scores
 from pipeline.settings import REPO_ROOT, get_settings
 
 DIGEST_DIR = REPO_ROOT / "data" / "digests"
-GROUPS = ("NYC metro", "Remote US", "Elsewhere US")
+GROUPS = ("NYC metro", "DC / Philadelphia corridor", "Remote US", "Elsewhere US")
 NY = ZoneInfo("America/New_York")
 
 log = get_logger("digest")
@@ -64,19 +65,32 @@ def select_digest_jobs(conn) -> list[DigestJob]:
         return [DigestJob(*row) for row in cur.fetchall()]
 
 
-def group_of(job: DigestJob) -> str:
-    if job.is_nyc_metro:
+def group_of(job: DigestJob, geo_cfg: dict | None = None) -> str:
+    """NYC metro, then the D.C. / Philadelphia corridor, then Remote US, then Elsewhere US.
+
+    Distance decides when the location can be resolved; the stored is_nyc_metro flag is the fallback.
+    """
+    if geo_cfg is not None:
+        metro, resolved = geo.metro_group(job.location, geo_cfg)
+        if metro == "nyc":
+            return GROUPS[0]
+        if metro == "corridor":
+            return GROUPS[1]
+        nyc = job.is_nyc_metro and not resolved
+    else:
+        nyc = job.is_nyc_metro
+    if nyc:
         return GROUPS[0]
     if job.is_remote:
-        return GROUPS[1]
-    return GROUPS[2]
+        return GROUPS[2]
+    return GROUPS[3]
 
 
-def group_jobs(jobs: list[DigestJob]) -> dict[str, list[DigestJob]]:
+def group_jobs(jobs: list[DigestJob], geo_cfg: dict | None = None) -> dict[str, list[DigestJob]]:
     """Groups keep the input order, which is already rank order."""
     grouped: dict[str, list[DigestJob]] = {g: [] for g in GROUPS}
     for job in jobs:
-        grouped[group_of(job)].append(job)
+        grouped[group_of(job, geo_cfg)].append(job)
     return grouped
 
 
@@ -196,7 +210,7 @@ def run_digest_stage(conn, mark: bool = True) -> DigestResult:
     now = datetime.now(timezone.utc)
     update_rank_scores(conn)
     jobs = select_digest_jobs(conn)
-    grouped = group_jobs(jobs)
+    grouped = group_jobs(jobs, get_settings().search_config["geo"])
     markdown = render_markdown(grouped, now)
     path = write_digest(markdown, now)
     if mark:

@@ -16,9 +16,8 @@ Score the job against the candidate's resume and return only JSON that matches t
 Candidate profile: about 4 years of professional data science and machine learning experience. Based in the New York / New Jersey area.
 
 Scoring calibration (be stingy)
-- Your four scores (skills_match, experience_fit, domain_fit, location_fit) add up to at most 85. Most reasonable postings should land between 30 and 60; above 70 is rare and means a near-exact match on skills, experience, domain and location. Posting recency is scored separately in code; ignore it.
+- Your three scores (skills_match, experience_fit, domain_fit) add up to at most 75. Most reasonable postings should land between 25 and 50; above 60 is rare and means a near-exact match on skills, experience and domain. Location and posting recency are scored separately in code; do not score them.
 - experience_fit: the posting requires 3 to 4 years -> up to 20. Requires 5 years -> at most 10. Requires 6 or more years -> at most 4.
-- location_fit: New York / New Jersey area, or explicitly remote within the US -> up to 10. Hybrid or on-site elsewhere in the US with no remote option -> at most 3. A location that is unclear -> at most 3.
 - skills_match: count only skills the resume actually shows. Missing core requirements lower it sharply.
 - domain_fit: a domain the resume has no experience in is at most 6.
 
@@ -37,15 +36,15 @@ Rules
 {resume_text}
 </resume>"""
 
-# BUILD_PLAN.md Step 8 shape, minus seniority_fit (dropped 2026-10-01; recency replaces it and is computed
-# in code) and the model's own total (always recomputed). Verified live against Haiku 4.5.
+# BUILD_PLAN.md Step 8 shape, minus seniority_fit (dropped 2026-10-01; recency replaces it, computed in code),
+# location_fit (computed in code from distance, 2026-10-01) and the model's own total (always recomputed). Verified live against Haiku 4.5.
 SCHEMA: dict = {
     "type": "object",
     "additionalProperties": False,
     "required": [
         "years_required_min", "years_required_text", "seniority", "sponsorship_jd",
         "sponsorship_evidence", "skills_match", "experience_fit", "domain_fit",
-        "location_fit", "one_line_summary", "red_flags",
+        "one_line_summary", "red_flags",
     ],
     "properties": {
         "years_required_min": {"type": ["integer", "null"]},
@@ -56,7 +55,6 @@ SCHEMA: dict = {
         "skills_match": {"type": "integer", "minimum": 0, "maximum": 40},
         "experience_fit": {"type": "integer", "minimum": 0, "maximum": 20},
         "domain_fit": {"type": "integer", "minimum": 0, "maximum": 15},
-        "location_fit": {"type": "integer", "minimum": 0, "maximum": 10},
         "one_line_summary": {"type": "string"},
         "red_flags": {"type": "array", "items": {"type": "string"}},
     },
@@ -86,14 +84,13 @@ class ScoreResult(BaseModel):
     skills_match: int = Field(ge=0, le=40)
     experience_fit: int = Field(ge=0, le=20)
     domain_fit: int = Field(ge=0, le=15)
-    location_fit: int = Field(ge=0, le=10)
-    total: int = 0  # recomputed below: the four Haiku-judged parts, max 85; recency is added in code
+    total: int = 0  # recomputed below: the three Haiku-judged parts, max 75; location is added in code
     one_line_summary: str
     red_flags: list[str]
 
     @model_validator(mode="after")
     def _recompute_total(self) -> ScoreResult:
-        self.total = self.skills_match + self.experience_fit + self.domain_fit + self.location_fit
+        self.total = self.skills_match + self.experience_fit + self.domain_fit
         return self
 
 

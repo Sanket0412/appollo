@@ -61,6 +61,35 @@ def test_groups_split_nyc_remote_elsewhere_and_keep_order():
     assert [j.id for j in grouped["Elsewhere US"]] == ["3"]
 
 
+GEO = {
+    "hubs": {
+        "nyc": {"lat": 40.7128, "lon": -74.0060},
+        "dc": {"lat": 38.9072, "lon": -77.0369},
+        "philadelphia": {"lat": 39.9526, "lon": -75.1652},
+    },
+    "score_hubs": ["nyc", "dc"], "full_points_miles": 25, "zero_points_miles": 250,
+    "nyc_metro_miles": 50, "corridor_hubs": ["dc", "philadelphia"], "corridor_miles": 50,
+}
+
+
+def test_corridor_group_uses_distance_and_overrides_a_stale_flag():
+    jobs = [
+        make(id="dc", location="Bethesda, MD", is_nyc_metro=False),
+        make(id="philly", location="Philadelphia, PA", is_nyc_metro=False),
+        make(id="stale_nyc", location="Rochester, New York", is_nyc_metro=True),
+        make(id="nyc", location="Jersey City, NJ", is_nyc_metro=False),
+    ]
+    grouped = group_jobs(jobs, GEO)
+    assert [j.id for j in grouped["DC / Philadelphia corridor"]] == ["dc", "philly"]
+    assert [j.id for j in grouped["NYC metro"]] == ["nyc"]
+    assert [j.id for j in grouped["Elsewhere US"]] == ["stale_nyc"]
+
+
+def test_unresolvable_location_falls_back_to_the_stored_flag():
+    grouped = group_jobs([make(id="x", location="Somewhere Unknown", is_nyc_metro=True)], GEO)
+    assert [j.id for j in grouped["NYC metro"]] == ["x"]
+
+
 # --- labels ---
 
 def test_lca_none_renders_no_filing_history_but_zero_is_a_real_number():

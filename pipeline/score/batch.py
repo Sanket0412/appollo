@@ -15,6 +15,7 @@ from anthropic.types.message_create_params import MessageCreateParamsNonStreamin
 from anthropic.types.messages.batch_create_params import Request
 from psycopg.types.json import Jsonb
 
+from pipeline import geo
 from pipeline.log import get_logger
 from pipeline.score import rubric
 from pipeline.settings import get_settings, resume_text
@@ -38,6 +39,7 @@ class Job:
     location: str | None
     description: str | None
     posted_at: datetime | None = None
+    is_remote: bool = False
 
 
 @dataclass
@@ -98,7 +100,7 @@ def load_jobs(conn, ids: list[str]) -> dict[str, Job]:
         return {}
     with conn.cursor() as cur:
         cur.execute(
-            "select id, company, title, location, description, posted_at from public.jobs where id = any(%s)", (ids,)
+            "select id, company, title, location, description, posted_at, is_remote from public.jobs where id = any(%s)", (ids,)
         )
         return {r[0]: Job(*r) for r in cur.fetchall()}
 
@@ -106,7 +108,7 @@ def load_jobs(conn, ids: list[str]) -> dict[str, Job]:
 def load_shortlisted(conn, exclude_ids: set[str], limit: int) -> list[Job]:
     with conn.cursor() as cur:
         cur.execute(
-            "select id, company, title, location, description, posted_at from public.jobs "
+            "select id, company, title, location, description, posted_at, is_remote from public.jobs "
             "where status = 'shortlisted' and not (id = any(%s)) "
             "and posted_at >= now() - make_interval(days => %s) "
             "order by is_nyc_metro desc, similarity desc nulls last limit %s",
@@ -116,7 +118,12 @@ def load_shortlisted(conn, exclude_ids: set[str], limit: int) -> list[Job]:
 
 
 def apply_score(conn, job: Job, result: rubric.ScoreResult, tally: Tally) -> None:
-    max_yoe = get_settings().search_config["scoring"]["max_yoe_required"]
+    cfg = get_settings().search_config
+    max_yoe = cfg["scoring"]["max_yoe_required"]
+    # Core fit = Haiku's skills + experience + domain (max 75) plus the location part computed in code (max 10).
+    core_fit = result.total + geo.location_points(
+        job.location, job.is_remote, cfg["geo"], cfg["scoring"]["location_max_points"]
+    )
 
     if not rubric.evidence_is_verbatim(result.sponsorship_evidence, job.description):
         tally.evidence_violations += 1
@@ -144,7 +151,7 @@ def apply_score(conn, job: Job, result: rubric.ScoreResult, tally: Tally) -> Non
             """,
             (
                 result.years_required_min, result.years_required_text, result.seniority,
-                result.sponsorship_jd, result.sponsorship_evidence or None, result.total,
+                result.sponsorship_jd, result.sponsorship_evidence or None, core_fit,
                 result.one_line_summary, Jsonb(result.red_flags), status, reason, status, job.id,
             ),
         )

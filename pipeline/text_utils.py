@@ -143,7 +143,7 @@ def has_non_us_keyword(text: str, locations_config: dict) -> bool:
 
 
 def parse_location(
-    raw: str | None, locations_config: dict, description: str | None = None
+    raw: str | None, locations_config: dict, description: str | None = None, geo_config: dict | None = None
 ) -> tuple[bool, bool, bool]:
     """Returns (is_us, is_remote, is_nyc_metro) from a free-text location string (search.yaml > locations).
 
@@ -155,6 +155,14 @@ def parse_location(
 
     is_remote = any(kw in text for kw in locations_config["remote_keywords"])
     is_nyc_metro = any(kw in text for kw in locations_config["nyc_metro"])
+    if geo_config is not None:
+        # Distance beats the substring list when the place can be located ("Rochester, New York" is
+        # not NYC); the list is only the fallback for text the gazetteer cannot resolve.
+        from pipeline import geo
+
+        group, resolved = geo.metro_group(raw_text, geo_config)
+        if resolved:
+            is_nyc_metro = group == "nyc"
 
     if has_non_us_keyword(text, locations_config):
         is_us = False

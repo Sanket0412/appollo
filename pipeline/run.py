@@ -58,9 +58,9 @@ def compute_since(window: str) -> datetime:
     return datetime.now(timezone.utc) - timedelta(hours=hours)
 
 
-def normalize(raw: RawJob, locations_config: dict) -> Job:
+def normalize(raw: RawJob, locations_config: dict, geo_config: dict | None = None) -> Job:
     company_norm = normalize_company(raw.company)
-    is_us, is_remote_parsed, is_nyc_metro = parse_location(raw.location, locations_config, raw.description_text)
+    is_us, is_remote_parsed, is_nyc_metro = parse_location(raw.location, locations_config, raw.description_text, geo_config)
     return Job(
         id=canonical_id(company_norm, raw.title, raw.location),
         source=raw.source,
@@ -206,7 +206,7 @@ def fetch_and_prefilter(companies: list[CompanyConfig], since: datetime, applied
             continue
 
         for raw in raw_jobs:
-            job = normalize(raw, locations_cfg)
+            job = normalize(raw, locations_cfg, settings.search_config["geo"])
             is_jobspy = raw.source not in ATS_SOURCES
             keep, reason = prefilter.evaluate(
                 job,

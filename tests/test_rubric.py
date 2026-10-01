@@ -14,13 +14,13 @@ from pipeline.score.rubric import (
 GOOD = {
     "years_required_min": 3, "years_required_text": "3+ years", "seniority": "mid",
     "sponsorship_jd": "Not Mentioned", "sponsorship_evidence": "",
-    "skills_match": 30, "experience_fit": 15, "domain_fit": 10, "location_fit": 5,
+    "skills_match": 30, "experience_fit": 15, "domain_fit": 10,
     "total": 99, "one_line_summary": "Builds ranking models in Python.", "red_flags": [],
 }
 
 
 def test_total_is_recomputed_from_parts():
-    assert ScoreResult(**GOOD).total == 60
+    assert ScoreResult(**GOOD).total == 55
 
 
 def test_null_years_allowed():
@@ -29,7 +29,7 @@ def test_null_years_allowed():
 
 @pytest.mark.parametrize("field,value", [
     ("skills_match", 41), ("experience_fit", 21), ("domain_fit", 16),
-    ("location_fit", 11), ("skills_match", -1),
+    ("skills_match", -1),
 ])
 def test_part_ranges_enforced(field, value):
     with pytest.raises(ValidationError):
@@ -73,8 +73,9 @@ def test_build_user_truncates_description():
     assert text.count("x") == 12000
 
 
-def test_seniority_fit_is_gone_from_the_schema():
+def test_seniority_fit_and_location_fit_are_gone_from_the_schema():
     assert "seniority_fit" not in rubric.SCHEMA["properties"]
+    assert "location_fit" not in rubric.SCHEMA["properties"]
     assert "total" not in rubric.SCHEMA["required"]
 
 
