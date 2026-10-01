@@ -559,6 +559,8 @@ Pass when 5 jobs get valid scores, the sponsorship evidence is a verbatim substr
 
 ### Step 9. Ranking and digest
 
+**Revised 2026-10-01 (see `docs/DECISIONS.md`).** The ranking formula below is superseded. The digest is ordered by posting recency, newest first, within NYC metro / Remote US / Elsewhere US, with core fit as the same-day tiebreak; only jobs with core fit >= `digest.min_core_fit` (50) are included. `fit_score` stores core fit (max 85); recency is computed live.
+
 **Build**
 - `pipeline/score/rank.py` computes `rank_score` for `scored` rows.
 

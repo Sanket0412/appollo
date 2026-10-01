@@ -1,13 +1,14 @@
 """Pipeline CLI.
 
 python -m pipeline.run --sources ats[,jobspy] --window 24h|7d|14d
-                       [--score [--no-llm] [--max-score N]] [--digest] [--email]
+                       [--score [--no-llm] [--max-score N]] [--digest [--no-mark]] [--email]
                        [--limit-companies N] [--dry-run]
 
 Stages: fetch, normalize, prefilter, dedup, upsert, then an LCA join for kept rows, then (--score)
 the embedding shortlist, then the Haiku rubric via the Batches API (--max-score N caps it).
---no-llm stops after the embedding stage. Digest (Step 9) and JobSpy (Step 6) aren't built yet;
---digest/--email/--sources jobspy log a warning and are otherwise a no-op.
+--no-llm stops after the embedding stage. --digest ranks, writes data/digests/ and marks rows digested
+(--no-mark to preview), --email sends it.
+JobSpy (Step 6) isn't built yet; --sources jobspy logs a warning and is a no-op.
 """
 from __future__ import annotations
 
@@ -18,6 +19,8 @@ from datetime import datetime, timedelta, timezone
 import yaml
 
 from pipeline.db import get_conn
+from pipeline.export import digest as digest_stage
+from pipeline.export import emailer
 from pipeline.fetchers import ashby, greenhouse, lever, workday
 from pipeline.filters import prefilter
 from pipeline.filters.dedup import ATS_SOURCES, canonical_id, source_priority
@@ -117,10 +120,30 @@ returning (xmax = 0) as inserted
 """
 
 
+def _refresh_lca(cur, job: Job) -> None:
+    """Rows stored before an alias or LCA reload have stale NULL LCA fields; fill them when we now match."""
+    if job.lca_match_name is None:
+        return
+    cur.execute(
+        "update public.jobs set lca_filings = %s, lca_relevant_soc = %s, lca_match_name = %s, lca_match_score = %s "
+        "where source = %s and ats_job_id = %s and lca_match_name is null",
+        (job.lca_filings, job.lca_relevant_soc, job.lca_match_name, job.lca_match_score, job.source, job.ats_job_id),
+    )
+
+
 def upsert_job(conn, job: Job) -> str:
     """Returns 'inserted', 'updated' (ATS overwrote a JobSpy row) or 'unchanged'."""
     description = None if job.status == "excluded" else job.description
     with conn.cursor() as cur:
+        if job.ats_job_id is not None:
+            # The same ATS posting can get a different canonical id if its location text changes
+            # (e.g. the Workday detail fallback appended a country); never insert it twice.
+            cur.execute(
+                "select 1 from public.jobs where source = %s and ats_job_id = %s", (job.source, job.ats_job_id)
+            )
+            if cur.fetchone() is not None:
+                _refresh_lca(cur, job)
+                return "unchanged"
         cur.execute(
             UPSERT_SQL,
             {
@@ -217,13 +240,12 @@ def main() -> None:
     parser.add_argument("--max-score", type=int, default=None, help="with --score, cap how many jobs go to Haiku")
     parser.add_argument("--digest", action="store_true")
     parser.add_argument("--email", action="store_true")
+    parser.add_argument("--no-mark", action="store_true", help="with --digest, write the file but leave rows as scored")
     args = parser.parse_args()
 
     sources = [s.strip() for s in args.sources.split(",") if s.strip()]
     if "jobspy" in sources:
         log.warning("--sources jobspy: JobSpy fetcher is not built yet (Step 6); ignoring")
-    if args.digest or args.email:
-        log.warning("--digest/--email are not built yet (Step 9); ignoring")
 
     since = compute_since(args.window)
     companies = load_companies()
@@ -270,6 +292,14 @@ def main() -> None:
                     _print_top_shortlisted(conn)
                 if not args.no_llm:
                     counts.update({f"score_{k}": v for k, v in score_batch.run_scoring_stage(conn, args.max_score).items()})
+
+            if args.digest or args.email:
+                result = digest_stage.run_digest_stage(conn, mark=not args.no_mark)
+                counts["digest_roles"] = len(result.jobs)
+                if not is_ci():
+                    print(f"\nDigest written to {result.path} ({len(result.jobs)} role(s), marked digested: {result.marked})")
+                if args.email:
+                    counts["emailed"] = int(emailer.send_digest(result))
 
             with conn.cursor() as cur:
                 cur.execute("update public.runs set counts = %s where id = %s", (json.dumps(counts), run_id))

@@ -39,7 +39,7 @@ marking anything digested, and the first manual GitHub Actions run in Step 11.
 | 5 | Prefilter, dedup, run orchestrator | **Done**, committed and pushed | — |
 | 7 | Embeddings and shortlist | **Built and tested**, committed; waiting on Sanket's `min_similarity` choice | Threshold decision (see below) |
 | 8 | Haiku rubric via Batches API | **Built and tested**, committed; waiting on Sanket's review of two sample scores | Sample-score review, and the `min_similarity` choice from Step 7 |
-| 9 | Ranking and digest | Not started | Step 8. Ranking formula already updated (no_signal_penalty removed; NULL vs 0 distinction) in `search.yaml`/`BUILD_PLAN.md`, implementation pending. |
+| 9 | Ranking and digest | **Built and tested**, first digest written, awaiting Sanket's review before anything is marked digested | Digest review; `cap_exempt` tag needs a migration decision |
 | 11 | GitHub Actions | Not started | Step 9; GitHub Secrets already configured by Sanket |
 | 6 | JobSpy fetcher, local schedule, auto-discovery (source G) | Not started | Step 5. `jobspy.sites` already updated to `[indeed, linkedin, google, glassdoor, zip_recruiter]` in `search.yaml`, verified against installed python-jobspy 1.1.82. |
 | 10 | Tracker import/export and mark_applied | Not started | Step 9; Sanket has no tracker file yet — `import_tracker.py` must handle a missing file gracefully |
@@ -84,4 +84,7 @@ See [DECISIONS.md](./DECISIONS.md) for resolved decisions and open questions (Sm
 
 - **2026-10-01** — Sanket's rule changes applied in code and config (see `DECISIONS.md`): threshold 0.50, stingier rubric calibration, ambiguous location skipped, 6+ years skipped, 14-day hard age cap with a required posted date. 100 tests pass. **Not yet applied to the live database**: the auto-mode classifier blocked the one-off cleanup of legacy rows (empty-location rows to `excluded`, and resetting the 4 scored rows to `shortlisted` for re-scoring). Waiting on Sanket.
 
-**Resume point if this session ends here:** Steps 1-5, 7 and 8 are committed. Next is Step 9 (ranking and digest), after Sanket reviews the Step 8 sample scores and picks the Step 7 threshold. Step 9 needs `DIGEST_TO` in `.env`.
+- **2026-10-01** — Database cleanup run with Sanket's approval (12 empty-location rows excluded, 4 scored rows reset), then re-scored under the new calibration; 14-day run with `--max-score 15` scored 12 (1 real `jd_no_sponsorship` exclusion, 2 `yoe_too_high`) for $0.035. Core fit now ranges 32 to 70.
+- **2026-10-01** — Step 9 built: `pipeline/score/rank.py`, `pipeline/export/digest.py`, `pipeline/export/emailer.py`, `--digest [--no-mark]` and `--email` in `run.py`, `tests/test_digest.py`. Digest bar is core fit >= 50 (`digest.min_core_fit`), ordered newest first within NYC metro / Remote US / Elsewhere US. First digest written to `data/digests/2026-10-01.md` with `--no-mark`: 11 roles, nothing marked digested, nothing emailed. Details and the bugs fixed along the way are in `DECISIONS.md`. 140 tests pass.
+
+**Resume point if this session ends here:** Steps 1-5 and 7-9 are committed. Waiting on Sanket's review of the first digest (`data/digests/2026-10-01.md`); after that, mark it digested and send the first email, then Step 11 (GitHub Actions).

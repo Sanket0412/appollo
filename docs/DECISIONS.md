@@ -34,6 +34,14 @@ Tell Claude Code your answer in conversation; it will update the "Answer" column
 
 **Hard YOE filter before scoring (2026-10-01).** `prefilter.min_years_required()` pulls the years-of-experience figures out of the description (patterns like "6+ years of experience", "8-10 years", "minimum of 7 years"), ignores sentences marked preferred, bonus or nice to have, and takes the smallest figure, since a posting asking for "3+ years Python" and "7+ years in the industry" really requires 3. If that figure is above `scoring.max_yoe_required` (5, so 6+ is out) the job is excluded as `yoe_too_high` before embedding or Haiku, so it costs nothing and never gets a fit score. Haiku's own `years_required_min` check after scoring stays as a backstop for postings the regex misses. Checked read-only against 24 stored descriptions; it matched Haiku wherever both had a figure and missed one (BMS, 5).
 
+**Core fit and digest bar (2026-10-01).** `fit_score` in the `jobs` table now stores core fit only (skills_match + experience_fit + domain_fit + location_fit, max 85), so no migration was needed. Recency (0-15) is computed live in the digest from `posted_at`, which also removes the stale-recency caveat above. The digest includes only jobs with core fit at or above `digest.min_core_fit` (50).
+
+**Ranking is recency (2026-10-01).** `rank_score` = whole days since 2026-01-01 of `posted_at` plus core_fit / 1000, so the newest posting day comes first and core fit only orders jobs posted the same day. The old NYC, remote, sponsorship, LCA and freshness bonus weights are retired; `search.yaml > ranking` now holds only `tiebreak_divisor`. Groups are NYC metro, Remote US, Elsewhere US. The `v_daily_digest` view was not changed (it already orders by `is_nyc_metro desc, rank_score desc`).
+
+**Remote with no country (2026-10-01).** `parse_location(raw, cfg, description)` keeps a remote job only when the description has a clear US signal ("United States", "US-based", "U.S.", a US state name, "City, ST", or a USD salary range) and contains no non-US keyword. Also fixed two latent bugs found in the same code: non-US keywords were matched as substrings ("Indianapolis" contains "india") and state abbreviations were matched after upper-casing the text (so the word "in" read as IN).
+
+**Duplicate ATS ids and stale LCA fields (2026-10-01).** Adding the country to Workday locations changed canonical ids for jobs already stored, which tripped the unique `(source, ats_job_id)` index and failed run 6. `upsert_job` now treats an existing ATS id as already seen, and fills any NULL LCA fields on it when the employer now matches (this fixed Walmart rows stored before its alias existed).
+
 ## Open questions for after Step 4
 
 - **SmartRecruiters fetcher.** SmartRecruiters has a public postings API that could widen ATS coverage beyond Greenhouse/Lever/Ashby/Workday. Verify the current API shape before building; not scheduled yet.
