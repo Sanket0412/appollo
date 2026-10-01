@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 
 from bs4 import BeautifulSoup
 
@@ -91,22 +92,83 @@ def title_matches(title: str, titles_config: dict) -> bool:
     return not any(re.search(pat, title, re.IGNORECASE) for pat in excludes)
 
 
-def parse_location(raw: str | None, locations_config: dict) -> tuple[bool, bool, bool]:
-    """Returns (is_us, is_remote, is_nyc_metro) from a free-text location string (search.yaml > locations)."""
+_US_STATE_NAMES = [
+    "alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware",
+    "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky",
+    "louisiana", "maine", "maryland", "massachusetts", "michigan", "minnesota", "mississippi",
+    "missouri", "montana", "nebraska", "nevada", "new hampshire", "new jersey", "new mexico",
+    "new york", "north carolina", "north dakota", "ohio", "oklahoma", "oregon", "pennsylvania",
+    "rhode island", "south carolina", "south dakota", "tennessee", "texas", "utah", "vermont",
+    "virginia", "washington", "west virginia", "wisconsin", "wyoming",
+]
+_US_STATE_NAME_RE = re.compile(r"\b(" + "|".join(_US_STATE_NAMES) + r")\b", re.IGNORECASE)
+_US_TEXT_SIGNAL_RE = re.compile(r"\bunited states\b|\bus[- ]based\b|\bu\.s\.|\bUSA\b|\bUS only\b", re.IGNORECASE)
+# "$120,000 - $150,000", "$120k-$150k", "$95,000 to $130,000"
+_USD_RANGE_RE = re.compile(
+    r"\$\s?\d{2,3}(?:,\d{3})?(?:\.\d+)?\s?[kK]?\s*(?:-|\u2013|\u2014|to)\s*\$?\s?\d{2,3}(?:,\d{3})?(?:\.\d+)?\s?[kK]?"
+)
+
+
+def _has_word(text: str, keyword: str) -> bool:
+    return re.search(rf"(?<!\w){re.escape(keyword)}(?!\w)", text) is not None
+
+
+def _is_state_abbreviation_in_location_context(raw: str, states: list[str]) -> bool:
+    """Uppercase state code right after a comma ("Austin, TX") or as the whole token in a short
+    location string ("NY"), checked on the original case so the word "in" is never read as IN."""
+    return any(re.search(rf"(?:,\s*|^|[-/(]\s*){state}\b", raw) for state in states)
+
+
+@lru_cache(maxsize=4)
+def _city_state_re(states: tuple[str, ...]) -> re.Pattern:
+    return re.compile(r"\b[A-Z][A-Za-z.]+(?: [A-Z][A-Za-z.]+)*,\s*(?:" + "|".join(states) + r")\b")
+
+
+def has_us_signal_in_description(description: str, locations_config: dict) -> bool:
+    """Clear US evidence in free text: "United States", "US-based", "U.S.", a US state name or a
+    ", NY" style abbreviation, or a USD salary range."""
+    if not description:
+        return False
+    return bool(
+        _US_TEXT_SIGNAL_RE.search(description)
+        or _US_STATE_NAME_RE.search(description)
+        or _city_state_re(tuple(locations_config["us_states"])).search(description)
+        or _USD_RANGE_RE.search(description)
+    )
+
+
+def has_non_us_keyword(text: str, locations_config: dict) -> bool:
+    lowered = text.lower()
+    return any(_has_word(lowered, kw) for kw in locations_config["non_us_keywords"])
+
+
+def parse_location(
+    raw: str | None, locations_config: dict, description: str | None = None
+) -> tuple[bool, bool, bool]:
+    """Returns (is_us, is_remote, is_nyc_metro) from a free-text location string (search.yaml > locations).
+
+    A remote location with no country ("Remote") is not skipped outright when a description is
+    given: it is kept only if the description shows a clear US signal and no non-US keyword.
+    """
     text = (raw or "").strip().lower()
+    raw_text = (raw or "").strip()
 
     is_remote = any(kw in text for kw in locations_config["remote_keywords"])
     is_nyc_metro = any(kw in text for kw in locations_config["nyc_metro"])
 
-    if any(kw in text for kw in locations_config["non_us_keywords"]):
+    if has_non_us_keyword(text, locations_config):
         is_us = False
-    elif any(kw in text for kw in locations_config["us_keywords"]) or any(
-        re.search(rf"\b{re.escape(state)}\b", text.upper()) for state in locations_config["us_states"]
+    elif any(kw in text for kw in locations_config["us_keywords"]) or _is_state_abbreviation_in_location_context(
+        raw_text, locations_config["us_states"]
     ):
         is_us = True
+    elif is_remote and description:
+        # Ambiguous remote: needs a US signal in the description and no non-US country anywhere.
+        is_us = has_us_signal_in_description(description, locations_config) and not has_non_us_keyword(
+            description, locations_config
+        )
     else:
-        # No location, or no clear US signal (incl. remote with no country): skip, per
-        # search.yaml's unclear_remote_policy.
+        # No location, or no clear US signal: skip, per search.yaml's unclear_remote_policy.
         is_us = False
 
     return is_us, is_remote, is_nyc_metro

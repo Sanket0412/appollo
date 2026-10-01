@@ -57,7 +57,7 @@ def compute_since(window: str) -> datetime:
 
 def normalize(raw: RawJob, locations_config: dict) -> Job:
     company_norm = normalize_company(raw.company)
-    is_us, is_remote_parsed, is_nyc_metro = parse_location(raw.location, locations_config)
+    is_us, is_remote_parsed, is_nyc_metro = parse_location(raw.location, locations_config, raw.description_text)
     return Job(
         id=canonical_id(company_norm, raw.title, raw.location),
         source=raw.source,

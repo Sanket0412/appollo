@@ -93,3 +93,54 @@ def test_parse_location_remote_without_country_is_not_us():
 def test_parse_location_state_abbreviation():
     is_us, _, _ = parse_location("Jersey City, NJ", LOCATIONS_CONFIG)
     assert is_us is True
+
+
+# --- Remote with no country: kept only on a clear US signal in the description ---
+
+def _remote(description):
+    return parse_location("Remote", LOCATIONS_CONFIG, description)
+
+
+def test_remote_kept_when_description_says_united_states():
+    assert _remote("This role is open to candidates in the United States.") == (True, True, False)
+
+
+def test_remote_kept_with_us_based_phrase():
+    assert _remote("Must be US-based. You will build forecasting models.")[0] is True
+
+
+def test_remote_kept_with_city_state_in_description():
+    assert _remote("Our team sits in Brooklyn, NY and works remotely.")[0] is True
+
+
+def test_remote_kept_with_state_name_in_description():
+    assert _remote("Candidates must reside in California or Colorado.")[0] is True
+
+
+def test_remote_kept_with_usd_salary_range():
+    assert _remote("Pay range: $120,000 - $155,000 per year.")[0] is True
+    assert _remote("Compensation $120k-$155k plus equity.")[0] is True
+
+
+def test_remote_skipped_when_description_has_no_us_signal():
+    assert _remote("Join a fast-growing team and build ML models.")[0] is False
+
+
+def test_remote_skipped_when_us_signal_but_non_us_keyword_present():
+    assert _remote("US-based preferred, but we also hire in London.")[0] is False
+
+
+def test_remote_skipped_without_a_description():
+    assert parse_location("Remote", LOCATIONS_CONFIG)[0] is False
+
+
+def test_stray_uppercase_word_is_not_read_as_a_state():
+    assert _remote("Experience with SQL, OR Python is required.")[0] is False
+
+
+def test_non_us_keyword_needs_a_whole_word():
+    assert parse_location("Indianapolis, NY", LOCATIONS_CONFIG)[0] is True
+
+
+def test_word_in_is_not_read_as_state_indiana():
+    assert parse_location("Remote - anywhere in the world", LOCATIONS_CONFIG)[0] is False

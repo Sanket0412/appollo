@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 
 import anthropic
 from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
@@ -116,11 +116,7 @@ def load_shortlisted(conn, exclude_ids: set[str], limit: int) -> list[Job]:
 
 
 def apply_score(conn, job: Job, result: rubric.ScoreResult, tally: Tally) -> None:
-    cfg = get_settings().search_config
-    max_yoe = cfg["scoring"]["max_yoe_required"]
-    recency = rubric.recency_points(
-        job.posted_at, datetime.now(timezone.utc), cfg["scoring"]["recency_max_points"], cfg["max_posting_age_days"]
-    )
+    max_yoe = get_settings().search_config["scoring"]["max_yoe_required"]
 
     if not rubric.evidence_is_verbatim(result.sponsorship_evidence, job.description):
         tally.evidence_violations += 1
@@ -148,7 +144,7 @@ def apply_score(conn, job: Job, result: rubric.ScoreResult, tally: Tally) -> Non
             """,
             (
                 result.years_required_min, result.years_required_text, result.seniority,
-                result.sponsorship_jd, result.sponsorship_evidence or None, result.total + recency,
+                result.sponsorship_jd, result.sponsorship_evidence or None, result.total,
                 result.one_line_summary, Jsonb(result.red_flags), status, reason, status, job.id,
             ),
         )

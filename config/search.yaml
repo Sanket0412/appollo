@@ -123,7 +123,7 @@ jobspy:
 
 scoring:
   model: claude-haiku-4-5-20251001
-  recency_max_points: 15        # added to fit_score in code: full points when posted just now, 0 at max_posting_age_days
+  recency_max_points: 15        # shown in the digest: full points when posted just now, 0 at max_posting_age_days. Not part of core fit.
   min_similarity: 0.50          # chosen at Step 7 (2026-10-01); raise once irrelevant titles appear in larger runs
   max_per_run: 60
   max_yoe_required: 5           # exclude when years_required_min > this, i.e. skip 6+ (candidate has about 4 years)
@@ -131,19 +131,12 @@ scoring:
   fallback_sync: true
 
 ranking:
-  # LCA history can only raise rank, never lower it. A job with no LCA match at all (employer never
-  # filed, or employer_match.py couldn't match it) is neutral, not penalized: it gets none of the
-  # bonuses below, same as a matched employer with zero relevant filings. The digest and
-  # v_daily_digest must show "No filing history" for the no-match case rather than a 0 count, since
-  # those are different facts (implemented in Step 9; lca_filings/lca_relevant_soc stay NULL for
-  # "never matched" vs 0 for "matched, zero relevant").
-  nyc_metro_bonus: 15
-  remote_bonus: 5
-  sponsorship_available_bonus: 10
-  lca_strong_bonus: 8           # lca_relevant_soc >= lca_strong_threshold
-  lca_strong_threshold: 10
-  lca_some_bonus: 4
-  fresh_24h_bonus: 5
+  # Decided 2026-10-01: the digest is ordered by how recently a job was posted, newest first, within
+  # NYC metro / Remote US / Elsewhere US. Within the same posting day, higher core fit comes first.
+  # rank_score = days since 2026-01-01 of posted_at + core_fit / tiebreak_divisor.
+  # The old bonus weights (NYC, remote, sponsorship, LCA, freshness) are retired.
+  tiebreak_divisor: 1000
 
 digest:
   max_jobs: 30
+  min_core_fit: 50              # core fit = skills_match + experience_fit + domain_fit + location_fit (max 85); recency excluded
