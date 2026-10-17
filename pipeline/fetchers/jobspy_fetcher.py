@@ -21,6 +21,7 @@ from pipeline.ats_discovery import (
     to_entry,
     validate_board,
 )
+from pipeline.exclusions import is_excluded, load_excluded
 from pipeline.log import get_logger
 from pipeline.models import RawJob
 from pipeline.settings import REPO_ROOT, get_settings, is_ci
@@ -163,11 +164,14 @@ def discover_boards(candidates: list[tuple[str, str]]) -> int:
     with COMPANIES_PATH.open("r", encoding="utf-8") as f:
         existing = yaml.safe_load(f) or []
     seen = existing_ref_keys(existing)
+    excluded = load_excluded()
 
     new_entries = []
     for company, url in candidates:
         ref = parse_ats_url(url)
         if ref is None or normalize_company(company) in blocklist:
+            continue
+        if is_excluded(company, excluded) or is_excluded(ref.slug or ref.tenant or "", excluded):
             continue
         key = ref_key(ref)
         if key in seen:

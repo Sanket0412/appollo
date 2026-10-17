@@ -29,24 +29,6 @@
   tenant: citi
   board: '2'
   source: manual
-- name: Bank of America
-  ats: workday
-  host: ghr.wd1.myworkdayjobs.com
-  tenant: ghr
-  board: Lateral-US
-  source: manual
-- name: American Express
-  ats: workday
-  host: amh.wd12.myworkdayjobs.com
-  tenant: amh
-  board: External_Careers
-  source: manual
-- name: Accenture
-  ats: workday
-  host: accenture.wd103.myworkdayjobs.com
-  tenant: accenture
-  board: AccentureCareers
-  source: manual
 - name: Regeneron Pharmaceuticals
   ats: workday
   host: regeneron.wd1.myworkdayjobs.com
@@ -58,24 +40,6 @@
   host: blackrock.wd1.myworkdayjobs.com
   tenant: blackrock
   board: BlackRock_Professional
-  source: manual
-- name: PwC
-  ats: workday
-  host: pwc.wd3.myworkdayjobs.com
-  tenant: pwc
-  board: US_Experienced_Careers
-  source: manual
-- name: Bristol-Myers Squibb
-  ats: workday
-  host: bristolmyerssquibb.wd5.myworkdayjobs.com
-  tenant: bristolmyerssquibb
-  board: BMS
-  source: manual
-- name: Walmart
-  ats: workday
-  host: walmart.wd504.myworkdayjobs.com
-  tenant: walmart
-  board: WalmartExternal
   source: manual
 - name: Fiserv
   ats: workday
@@ -94,10 +58,6 @@
   host: rbc.wd3.myworkdayjobs.com
   tenant: rbc
   board: RBCGLOBAL1
-  source: manual
-- name: Palantir Technologies
-  ats: lever
-  slug: palantir
   source: manual
 - name: DoorDash
   ats: greenhouse
@@ -124,13 +84,58 @@
   board: nyuhscareers1
   source: manual
   cap_exempt: true
-- name: Cornell University
-  ats: workday
-  host: cornell.wd1.myworkdayjobs.com
-  tenant: cornell
-  board: CornellCareerPage
+- name: Standard Bots
+  ats: ashby
+  slug: StandardBots
   source: manual
-  cap_exempt: true
+- name: Garner Health
+  ats: greenhouse
+  slug: garnerhealth
+  source: manual
+- name: Hebbia
+  ats: ashby
+  slug: hebbia-ai
+  source: manual
+- name: EliseAI
+  ats: ashby
+  slug: EliseAI
+  source: manual
+- name: AssemblyAI
+  ats: greenhouse
+  slug: assemblyai
+  source: manual
+- name: Ro
+  ats: lever
+  slug: ro
+  source: manual
+- name: Cedar
+  ats: greenhouse
+  slug: careportalinc
+  source: manual
+- name: Dandy
+  ats: ashby
+  slug: dandy
+  source: manual
+- name: Tandem (now Forus)
+  ats: ashby
+  slug: forus
+  source: manual
+- name: Ramp
+  ats: ashby
+  slug: ramp
+  source: manual
+- name: Twitch
+  ats: greenhouse
+  slug: twitch
+  source: manual
+- name: Snowflake
+  ats: ashby
+  slug: snowflake
+  source: manual
+- name: Plaid
+  ats: ashby
+  slug: plaid
+  source: manual
 # --- HN "Who is hiring" (scripts/seed_from_hn.py). Discovery may add here, never overwrite. ---
 - name: Smarkets
   ats: ashby
@@ -149,10 +154,6 @@
 - name: Findigs
   ats: lever
   slug: findigs
-  source: hn
-- name: Wikimedia Foundation
-  ats: greenhouse
-  slug: wikimedia
   source: hn
 - name: Comity Inc.
   ats: ashby
@@ -226,10 +227,6 @@
   ats: ashby
   slug: artificialanalysis
   source: hn
-- name: Robotics and AI Institute
-  ats: lever
-  slug: rai
-  source: hn
 - name: Reframe Systems
   ats: ashby
   slug: reframesystems
@@ -288,3 +285,12 @@
   source: hn
 
 # --- Auto-discovered from JobSpy results (Step 6). ---
+- {name: Guidehouse, ats: workday, host: guidehouse.wd1.myworkdayjobs.com, tenant: guidehouse,
+  board: External, source: discovered}
+- {name: Floor & Decor, ats: workday, host: flooranddecoroutlets.wd1.myworkdayjobs.com,
+  tenant: flooranddecoroutlets, board: FloorandDecorCareers, source: discovered}
+- {name: Lennar, ats: workday, host: lennar.wd1.myworkdayjobs.com, tenant: lennar, board: Lennar_Jobs,
+  source: discovered}
+- {name: Michelin, ats: workday, host: michelinhr.wd3.myworkdayjobs.com, tenant: michelinhr,
+  board: Michelin, source: discovered}
+- {name: Anthropic, ats: greenhouse, slug: anthropic, source: discovered}

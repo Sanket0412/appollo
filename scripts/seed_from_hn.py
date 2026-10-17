@@ -25,6 +25,7 @@ from pipeline.ats_discovery import (
     to_entry,
     validate_board,
 )
+from pipeline.exclusions import is_excluded, load_excluded
 from pipeline.log import get_logger
 from pipeline.settings import get_settings
 from pipeline.text_utils import normalize_company
@@ -130,6 +131,7 @@ def main() -> None:
 
     settings = get_settings()
     blocklist = {normalize_company(n) for n in settings.search_config["staffing"]["company_blocklist"]}
+    excluded = load_excluded()
 
     existing = load_existing_companies()
     seen_keys = existing_ref_keys(existing)
@@ -167,6 +169,8 @@ def main() -> None:
 
             name = guess_company_name(text, fallback=ref.slug or ref.board or "unknown")
             name_norm = normalize_company(name)
+            if is_excluded(name, excluded) or is_excluded(ref.slug or ref.tenant or "", excluded):
+                continue
             if name_norm in blocklist or name_norm in seen_names:
                 if name_norm in seen_names:
                     already_present += 1
