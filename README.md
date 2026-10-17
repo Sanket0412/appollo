@@ -36,7 +36,7 @@ A real run may append new boards to `config/companies.yaml` as `source: discover
 To run it every day at 9:30 AM, register the task once in PowerShell:
 
 ```powershell
-$action   = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -File "G:\Projects\Appolloppollo\scriptsun_local.ps1"'
+$action   = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -File "G:\Projects\Appollo\appollo\scripts\run_local.ps1"'
 $trigger  = New-ScheduledTaskTrigger -Daily -At 9:30am
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -WakeToRun
 Register-ScheduledTask -TaskName "Appollo JobSpy" -Action $action -Trigger $trigger -Settings $settings
