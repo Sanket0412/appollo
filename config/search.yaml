@@ -127,9 +127,9 @@ lca:
 workday_search_terms: ['data scientist', 'machine learning', 'AI engineer', 'applied scientist']
 
 jobspy:
-  # Exact python-jobspy Site enum values (verified against the installed 1.1.82). If glassdoor or
-  # zip_recruiter error out or return nothing on a given run, log a warning and continue.
-  sites: [indeed, linkedin, google, glassdoor, zip_recruiter]
+  # Verified live 2026-10-16 (python-jobspy 1.1.82): indeed and linkedin return rows. glassdoor (400/403),
+  # zip_recruiter (403) and google (0 rows) fail or return nothing, so they are left out to avoid hammering blocked endpoints.
+  sites: [indeed, linkedin]
   search_terms: ['data scientist', 'machine learning engineer', 'AI engineer', 'applied scientist']
   results_wanted: 40
   distance_miles: 50

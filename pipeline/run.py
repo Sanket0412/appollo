@@ -8,7 +8,7 @@ Stages: fetch, normalize, prefilter, dedup, upsert, then an LCA join for kept ro
 the embedding shortlist, then the Haiku rubric via the Batches API (--max-score N caps it).
 --no-llm stops after the embedding stage. --digest ranks, writes data/digests/ and marks rows digested
 (--no-mark to preview), --email sends it.
-JobSpy (Step 6) isn't built yet; --sources jobspy logs a warning and is a no-op.
+--sources jobspy runs the local-only JobSpy fetcher (refuses to run in CI) and may append discovered boards to companies.yaml.
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ import yaml
 from pipeline.db import get_conn
 from pipeline.export import digest as digest_stage
 from pipeline.export import emailer
-from pipeline.fetchers import ashby, greenhouse, lever, workday
+from pipeline.fetchers import ashby, greenhouse, jobspy_fetcher, lever, workday
 from pipeline.filters import prefilter
 from pipeline.filters.dedup import ATS_SOURCES, canonical_id, source_priority
 from pipeline.log import get_logger
@@ -202,14 +202,39 @@ def dedup_batch(jobs: list[Job]) -> list[Job]:
     return list(by_id.values())
 
 
-def fetch_and_prefilter(companies: list[CompanyConfig], since: datetime, applied_history: prefilter.AppliedHistory) -> list[Job]:
+def _process(raw_jobs: list[RawJob], since: datetime, applied_history: prefilter.AppliedHistory) -> list[Job]:
     settings = get_settings()
-    titles_cfg = settings.search_config["titles"]
-    staffing_cfg = settings.search_config["staffing"]
-    red_flags = settings.search_config["red_flags"]
-    locations_cfg = settings.search_config["locations"]
-    max_yoe = settings.search_config["scoring"]["max_yoe_required"]
+    cfg = settings.search_config
+    out: list[Job] = []
+    for raw in raw_jobs:
+        job = normalize(raw, cfg["locations"], cfg["geo"])
+        keep, reason = prefilter.evaluate(
+            job,
+            since=since,
+            is_jobspy=raw.source not in ATS_SOURCES,
+            titles_config=cfg["titles"],
+            staffing_config=cfg["staffing"],
+            red_flags=cfg["red_flags"],
+            applied_history=applied_history,
+            max_yoe=cfg["scoring"]["max_yoe_required"],
+        )
+        if keep:
+            job = apply_lca(job)
+            job.status = "new"
+        else:
+            job.status = "excluded"
+            job.exclude_reason = reason
+        out.append(job)
+    return out
 
+
+def fetch_and_prefilter(
+    companies: list[CompanyConfig],
+    since: datetime,
+    applied_history: prefilter.AppliedHistory,
+    use_jobspy: bool = False,
+    discover: bool = True,
+) -> list[Job]:
     jobs: list[Job] = []
     for company in companies:
         fetch = FETCHERS.get(company.ats)
@@ -223,26 +248,13 @@ def fetch_and_prefilter(companies: list[CompanyConfig], since: datetime, applied
             log.exception("Failed fetching %s (%s)", company.name, company.ats)
             continue
 
-        for raw in raw_jobs:
-            job = normalize(raw, locations_cfg, settings.search_config["geo"])
-            is_jobspy = raw.source not in ATS_SOURCES
-            keep, reason = prefilter.evaluate(
-                job,
-                since=since,
-                is_jobspy=is_jobspy,
-                titles_config=titles_cfg,
-                staffing_config=staffing_cfg,
-                red_flags=red_flags,
-                applied_history=applied_history,
-                max_yoe=max_yoe,
-            )
-            if keep:
-                job = apply_lca(job)
-                job.status = "new"
-            else:
-                job.status = "excluded"
-                job.exclude_reason = reason
-            jobs.append(job)
+        jobs.extend(_process(raw_jobs, since, applied_history))
+
+    if use_jobspy:
+        try:
+            jobs.extend(_process(jobspy_fetcher.fetch(since, discover=discover), since, applied_history))
+        except Exception:
+            log.exception("JobSpy fetch failed")
 
     return jobs
 
@@ -262,16 +274,16 @@ def main() -> None:
     args = parser.parse_args()
 
     sources = [s.strip() for s in args.sources.split(",") if s.strip()]
-    if "jobspy" in sources:
-        log.warning("--sources jobspy: JobSpy fetcher is not built yet (Step 6); ignoring")
+    use_jobspy = "jobspy" in sources
+    use_ats = "ats" in sources
 
     since = compute_since(args.window)
-    companies = load_companies()
+    companies = load_companies() if use_ats else []
     if args.limit_companies:
         companies = companies[: args.limit_companies]
 
     if args.dry_run:
-        jobs = fetch_and_prefilter(companies, since, prefilter.AppliedHistory.empty())
+        jobs = fetch_and_prefilter(companies, since, prefilter.AppliedHistory.empty(), use_jobspy, discover=False)
         _print_dry_run_summary(jobs)
         return
 
@@ -287,7 +299,7 @@ def main() -> None:
         try:
             applied_history = load_applied_history(conn)
             sync_cap_exempt(conn, companies)
-            jobs = fetch_and_prefilter(companies, since, applied_history)
+            jobs = fetch_and_prefilter(companies, since, applied_history, use_jobspy)
             jobs = dedup_batch(jobs)
 
             counts = {"fetched": len(jobs), "inserted": 0, "updated": 0, "unchanged": 0, "excluded": 0}
@@ -352,9 +364,10 @@ def _print_top_shortlisted(conn, limit: int = 10) -> None:
 def _print_dry_run_summary(jobs: list[Job]) -> None:
     stats = {ats: {"jobs": 0, "newest": None} for ats in FETCHERS}
     for job in jobs:
-        s = stats.get(job.source)
-        if s is None:
+        key = job.source if job.source in stats else ("jobspy" if job.source.startswith("jobspy_") else None)
+        if key is None:
             continue
+        s = stats.setdefault(key, {"jobs": 0, "newest": None})
         s["jobs"] += 1
         if job.posted_at and (s["newest"] is None or job.posted_at > s["newest"]):
             s["newest"] = job.posted_at

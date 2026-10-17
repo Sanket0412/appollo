@@ -118,3 +118,32 @@ def validate_board(ref: AtsRef) -> bool:
     if titles is None or len(titles) < MIN_JOBS_FOR_VALID_BOARD:
         return False
     return not looks_like_test_board(titles)
+
+
+def ref_key(ref: AtsRef) -> tuple:
+    if ref.ats == "workday":
+        return (ref.ats, ref.host, ref.tenant, ref.board)
+    return (ref.ats, ref.slug)
+
+
+def existing_ref_keys(companies: list[dict]) -> set[tuple]:
+    keys = set()
+    for c in companies:
+        if c.get("ats") == "workday":
+            keys.add((c["ats"], c.get("host"), c.get("tenant"), c.get("board")))
+        else:
+            keys.add((c.get("ats"), c.get("slug")))
+    return keys
+
+
+def to_entry(name: str, ref: AtsRef, source: str) -> dict:
+    if ref.ats == "workday":
+        return {
+            "name": name,
+            "ats": "workday",
+            "host": ref.host,
+            "tenant": ref.tenant,
+            "board": ref.board,
+            "source": source,
+        }
+    return {"name": name, "ats": ref.ats, "slug": ref.slug, "source": source}

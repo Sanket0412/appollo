@@ -17,7 +17,14 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from pipeline.ats_discovery import AtsRef, parse_ats_url, validate_board
+from pipeline.ats_discovery import (
+    AtsRef,
+    existing_ref_keys,
+    parse_ats_url,
+    ref_key,
+    to_entry,
+    validate_board,
+)
 from pipeline.log import get_logger
 from pipeline.settings import get_settings
 from pipeline.text_utils import normalize_company
@@ -113,35 +120,6 @@ def load_existing_companies() -> list[dict]:
         return []
     with COMPANIES_PATH.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f) or []
-
-
-def ref_key(ref: AtsRef) -> tuple:
-    if ref.ats == "workday":
-        return (ref.ats, ref.host, ref.tenant, ref.board)
-    return (ref.ats, ref.slug)
-
-
-def existing_ref_keys(companies: list[dict]) -> set[tuple]:
-    keys = set()
-    for c in companies:
-        if c.get("ats") == "workday":
-            keys.add((c["ats"], c.get("host"), c.get("tenant"), c.get("board")))
-        else:
-            keys.add((c.get("ats"), c.get("slug")))
-    return keys
-
-
-def to_entry(name: str, ref: AtsRef, source: str) -> dict:
-    if ref.ats == "workday":
-        return {
-            "name": name,
-            "ats": "workday",
-            "host": ref.host,
-            "tenant": ref.tenant,
-            "board": ref.board,
-            "source": source,
-        }
-    return {"name": name, "ats": ref.ats, "slug": ref.slug, "source": source}
 
 
 def main() -> None:
