@@ -17,6 +17,9 @@ titles:
     - '\bdeep learning\b'
     - '\bresearch (engineer|scientist)\b.*\b(ml|ai|machine learning)\b'
     - '\bdecision scien'
+    - '\bresearch (scientist|engineer)\b'      # added 2026-10-16; the embedding step drops non-ML research roles
+    - '\bai (research|applications?)\b'
+    - '\bapplied research\b'
   exclude:          # none may match
     - '\bintern(ship)?\b'
     - '\bco-?op\b'

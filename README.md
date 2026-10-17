@@ -33,13 +33,13 @@ JobSpy runs only on this machine; it refuses to run when `GITHUB_ACTIONS=true`. 
 
 A real run may append new boards to `config/companies.yaml` as `source: discovered`. Review and commit that file yourself.
 
-To run it every day at 9:30 AM, register the task once in PowerShell:
+To run the whole pipeline (ATS boards, JobSpy, scoring, digest, email) every day at 7:00 AM, register the task once in PowerShell. The PC must be on or asleep (not shut down). The 10 AM cloud run stays as a fallback and only emails when it finds new roles:
 
 ```powershell
 $action   = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -ExecutionPolicy Bypass -File "G:\Projects\Appollo\appollo\scripts\run_local.ps1"'
-$trigger  = New-ScheduledTaskTrigger -Daily -At 9:30am
+$trigger  = New-ScheduledTaskTrigger -Daily -At 7:00am
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -WakeToRun
-Register-ScheduledTask -TaskName "Appollo JobSpy" -Action $action -Trigger $trigger -Settings $settings
+Register-ScheduledTask -TaskName "Appollo Daily" -Action $action -Trigger $trigger -Settings $settings
 ```
 
 Logs go to `data\logs\local_YYYY-MM-DD.log`.

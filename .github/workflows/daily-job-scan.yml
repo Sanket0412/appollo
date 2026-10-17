@@ -1,5 +1,8 @@
 name: daily-job-scan
 
+# Fallback and catch-up run. The main run is local at 7 AM (scripts/run_local.ps1, includes JobSpy).
+# It only emails when it finds roles the local run has not already delivered.
+
 # The repo is public, so this workflow must never print job titles, companies, links, resume text or
 # the digest. The pipeline logs counts only when GITHUB_ACTIONS=true; keep it that way.
 
@@ -38,7 +41,7 @@ jobs:
           key: fastembed-bge-small-en-v1.5
       - run: pip install -r requirements.txt
       - name: Run pipeline
-        run: python -m pipeline.run --sources ats --window ${{ inputs.window || '24h' }} --score --digest --email
+        run: python -m pipeline.run --sources ats --window ${{ inputs.window || '24h' }} --score --digest --email --email-if-roles
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

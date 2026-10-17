@@ -270,6 +270,7 @@ def main() -> None:
     parser.add_argument("--max-score", type=int, default=None, help="with --score, cap how many jobs go to Haiku")
     parser.add_argument("--digest", action="store_true")
     parser.add_argument("--email", action="store_true")
+    parser.add_argument("--email-if-roles", action="store_true", help="with --email, skip sending when the digest is empty")
     parser.add_argument("--no-mark", action="store_true", help="with --digest, write the file but leave rows as scored")
     args = parser.parse_args()
 
@@ -329,7 +330,7 @@ def main() -> None:
                 counts["digest_roles"] = len(result.jobs)
                 if not is_ci():
                     print(f"\nDigest written to {result.path} ({len(result.jobs)} role(s), marked digested: {result.marked})")
-                if args.email:
+                if args.email and not (args.email_if_roles and not result.jobs):
                     counts["emailed"] = int(emailer.send_digest(result))
 
             with conn.cursor() as cur:
