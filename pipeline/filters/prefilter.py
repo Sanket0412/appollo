@@ -7,17 +7,23 @@ from datetime import datetime
 
 from rapidfuzz import fuzz
 
+from pipeline.exclusions import is_excluded
 from pipeline.models import Job
 from pipeline.text_utils import normalize_company, title_norm
 
 FUZZY_TITLE_THRESHOLD = 90
 
-# "5+ years of experience", "3-5 years' relevant experience", "minimum of 6 years", "at least 7 years".
+_WORD_NUMBERS = {w: i for i, w in enumerate(
+    ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"], start=1)}
+_NUM = r"(\d{1,2}|" + "|".join(_WORD_NUMBERS) + r")"
+# "5+ years of experience", "5 or more years experience", "3-5 years' relevant experience" (a range takes its
+# first, smaller figure), "four to six years", and "6 years building / working with / in ...".
 _YEARS_EXPERIENCE_RE = re.compile(
-    r"(\d{1,2})\s*(?:\+|plus)?\s*(?:(?:-|\u2013|to)\s*\d{1,2}\s*\+?\s*)?years?\b[^.\n]{0,60}?\bexperience",
+    _NUM + r"\s*(?:\(\d{1,2}\)\s*)?(?:\+|plus)?\s*(?:(?:-|–|to)\s*" + _NUM + r"\s*\+?\s*)?(?:or more\s+)?years?\b"
+    r"(?:[^.\n]{0,60}?\bexperience|\s+(?:building|developing|working|using|deploying|shipping|designing|in|as)\b)",
     re.IGNORECASE,
 )
-_YEARS_MINIMUM_RE = re.compile(r"(?:minimum|at least|min\.?)\s+(?:of\s+)?(\d{1,2})\s*\+?\s*years?\b", re.IGNORECASE)
+_YEARS_MINIMUM_RE = re.compile(r"(?:minimum|at least|min\.?)\s+(?:of\s+)?" + _NUM + r"\s*\+?\s*years?\b", re.IGNORECASE)
 _OPTIONAL_RE = re.compile(r"\bprefer(?:red|ably)?\b|nice to have|\bbonus\b|\ba plus\b", re.IGNORECASE)
 
 
@@ -41,7 +47,8 @@ def min_years_required(description: str | None) -> int | None:
         for m in regex.finditer(description):
             if _OPTIONAL_RE.search(_sentence_around(description, m.start(), m.end())):
                 continue
-            years = int(m.group(1))
+            raw = m.group(1).lower()
+            years = int(raw) if raw.isdigit() else _WORD_NUMBERS[raw]
             if 0 < years <= 30:
                 found.append(years)
     return min(found) if found else None
@@ -79,7 +86,11 @@ def evaluate(
     red_flags: list[str],
     applied_history: AppliedHistory,
     max_yoe: int | None = None,
+    excluded_companies: set[str] | None = None,
 ) -> tuple[bool, str | None]:
+    if excluded_companies and is_excluded(job.company, excluded_companies):
+        return False, "excluded_company"
+
     includes = titles_config.get("include", [])
     excludes = titles_config.get("exclude", [])
 

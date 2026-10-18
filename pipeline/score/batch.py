@@ -18,7 +18,7 @@ from psycopg.types.json import Jsonb
 from pipeline import geo
 from pipeline.log import get_logger
 from pipeline.score import rubric
-from pipeline.settings import get_settings, resume_text
+from pipeline.settings import get_settings, is_ci, resume_text
 
 MAX_TOKENS = 800
 POLL_SECONDS = 30
@@ -103,6 +103,46 @@ def load_jobs(conn, ids: list[str]) -> dict[str, Job]:
             "select id, company, title, location, description, posted_at, is_remote from public.jobs where id = any(%s)", (ids,)
         )
         return {r[0]: Job(*r) for r in cur.fetchall()}
+
+
+MIN_DESCRIPTION_CHARS = 200  # below this Haiku has nothing to judge and invents years, skills and a summary
+REFETCH_PAUSE_SECONDS = 2.0
+REFETCH_MAX = 20
+
+
+def has_description(job: Job) -> bool:
+    return len((job.description or "").strip()) >= MIN_DESCRIPTION_CHARS
+
+
+def refill_descriptions(conn, jobs: list[Job]) -> None:
+    """LinkedIn search rows sometimes arrive without a description. Fetch it once from the public posting page
+    (local machine only) and store it; jobs that still have none are left shortlisted and never sent to Haiku."""
+    if is_ci():
+        return
+    from pipeline.fetchers import jobspy_fetcher
+
+    missing = [j for j in jobs if not has_description(j)]
+    with conn.cursor() as cur:
+        cur.execute(
+            "select id, url from public.jobs where id = any(%s) and source = 'jobspy_linkedin'", ([j.id for j in missing],)
+        )
+        urls = dict(cur.fetchall())
+    by_id = {j.id: j for j in missing}
+    tried = filled = 0
+    for job_id, url in urls.items():
+        if tried >= REFETCH_MAX:
+            break
+        if tried:
+            time.sleep(REFETCH_PAUSE_SECONDS)
+        tried += 1
+        text = jobspy_fetcher.fetch_linkedin_description(url)
+        if text and len(text) >= MIN_DESCRIPTION_CHARS:
+            by_id[job_id].description = text
+            with conn.cursor() as cur:
+                cur.execute("update public.jobs set description = %s where id = %s", (text, job_id))
+            filled += 1
+    conn.commit()
+    log.info("Description refetch: %d tried, %d filled, %d job(s) still without one", tried, filled, len(missing) - filled)
 
 
 def load_shortlisted(conn, exclude_ids: set[str], limit: int) -> list[Job]:
@@ -234,6 +274,8 @@ def run_scoring_stage(conn, max_score: int | None = None) -> dict:
     in_flight = collect_earlier_batches(conn, client, model, system, tally)
 
     jobs = load_shortlisted(conn, in_flight, max_score or cfg["max_per_run"])
+    refill_descriptions(conn, jobs)
+    jobs = [j for j in jobs if has_description(j)]
     if jobs:
         by_id = {j.id: j for j in jobs}
         batch = client.messages.batches.create(

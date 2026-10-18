@@ -12,6 +12,7 @@ import time
 from datetime import date, datetime, timezone
 from datetime import time as dtime
 
+import requests
 import yaml
 
 from pipeline.ats_discovery import (
@@ -25,7 +26,7 @@ from pipeline.exclusions import is_excluded, load_excluded
 from pipeline.log import get_logger
 from pipeline.models import RawJob
 from pipeline.settings import REPO_ROOT, get_settings, is_ci
-from pipeline.text_utils import normalize_company, title_matches
+from pipeline.text_utils import html_to_text, normalize_company, title_matches
 
 log = get_logger("jobspy")
 
@@ -66,6 +67,31 @@ def _posted_at(value) -> datetime | None:
         return None
     end_of_day = datetime.combine(day, dtime(23, 59), tzinfo=timezone.utc)
     return min(end_of_day, datetime.now(timezone.utc))
+
+
+def assume_in_window(raw: RawJob, now: datetime | None = None) -> RawJob:
+    """LinkedIn often returns no date_posted. The scrape already asked the site for only the last
+    hours_old hours, so a dateless JobSpy row is dated now instead of being dropped (approved 2026-10-18)."""
+    if raw.posted_at is not None:
+        return raw
+    return raw.model_copy(update={"posted_at": now or datetime.now(timezone.utc)})
+
+
+def fetch_linkedin_description(url: str) -> str | None:
+    """One public, logged-out request for a LinkedIn posting whose search row came back without a description.
+    Returns None on any failure, a redirect to a sign-up or checkpoint page, or a 429 (a stop point, never retried)."""
+    _refuse_in_ci()
+    try:
+        resp = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+    except requests.RequestException:
+        return None
+    if resp.status_code != 200 or any(p in resp.url for p in ("/signup", "/authwall", "/checkpoint", "/login")):
+        return None
+    from bs4 import BeautifulSoup
+
+    block = BeautifulSoup(resp.text, "html.parser").find("div", class_=lambda c: c and "show-more-less-html__markup" in c)
+    text = html_to_text(str(block)) if block is not None else ""
+    return text or None
 
 
 def row_to_raw_job(row: dict) -> RawJob | None:
@@ -142,7 +168,7 @@ def fetch(since: datetime, discover: bool = True) -> list[RawJob]:
             raw = row_to_raw_job(row)
             if raw is None:
                 continue
-            out.append(raw)
+            out.append(assume_in_window(raw))
             direct = _clean(row.get("job_url_direct"))
             if direct and title_matches(raw.title, search_config["titles"]):
                 discovered_candidates.append((raw.company, direct))

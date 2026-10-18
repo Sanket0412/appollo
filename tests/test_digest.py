@@ -166,3 +166,34 @@ def test_cap_exempt_tag_in_markdown_and_html():
     assert "[Cap-exempt]" in render_html(grouped, NOW)
     plain = group_jobs([make(cap_exempt=False)])
     assert "Cap-exempt" not in render_markdown(plain, NOW)
+
+
+# --- location collapse ---
+
+GEO = {
+    "hubs": {"nyc": {"lat": 40.7128, "lon": -74.0060}, "dc": {"lat": 38.9072, "lon": -77.0369},
+             "philadelphia": {"lat": 39.9526, "lon": -75.1652}},
+    "score_hubs": ["nyc", "dc"], "nyc_metro_miles": 50, "corridor_hubs": ["dc", "philadelphia"], "corridor_miles": 50,
+}
+
+
+def test_collapse_prefers_nyc_and_counts_others():
+    from pipeline.export.digest import collapse_locations
+
+    jobs = [
+        make(id="a", company="Slalom", title="AI/ML Engineer", location="Miami, FL", is_nyc_metro=False),
+        make(id="b", company="Slalom", title="AI/ML Engineer", location="White Plains, NY", is_nyc_metro=False),
+        make(id="c", company="Slalom", title="AI/ML Engineer", location="New Brunswick, NJ", is_nyc_metro=False),
+        make(id="d", company="Acme", title="Data Scientist", location="Austin, TX", is_nyc_metro=False),
+    ]
+    out = collapse_locations(jobs, GEO)
+    assert [j.company for j in out] == ["Slalom", "Acme"]
+    assert out[0].location == "White Plains, NY (+2 other locations)"
+    assert out[1].location == "Austin, TX"
+
+
+def test_collapse_keeps_different_titles_apart():
+    from pipeline.export.digest import collapse_locations
+
+    jobs = [make(id="a", title="Data Scientist"), make(id="b", title="Senior Data Scientist")]
+    assert len(collapse_locations(jobs, GEO)) == 2

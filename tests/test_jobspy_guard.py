@@ -23,6 +23,16 @@ def test_row_prefers_direct_url_and_tags_source():
     assert raw.posted_at is not None and raw.posted_at.date().isoformat() == "2026-10-16"
 
 
+def test_dateless_row_is_dated_now_and_dated_row_is_untouched():
+    now = datetime(2026, 10, 18, 12, tzinfo=timezone.utc)
+    dateless = jobspy_fetcher.row_to_raw_job({"site": "linkedin", "title": "ML Engineer", "company": "A", "job_url": "u"})
+    assert dateless.posted_at is None
+    assert jobspy_fetcher.assume_in_window(dateless, now).posted_at == now
+    dated = jobspy_fetcher.row_to_raw_job(
+        {"site": "linkedin", "title": "ML Engineer", "company": "A", "job_url": "u", "date_posted": "2026-10-16"})
+    assert jobspy_fetcher.assume_in_window(dated, now).posted_at == dated.posted_at
+
+
 def test_row_handles_nan_and_missing_fields():
     nan = math.nan
     assert jobspy_fetcher.row_to_raw_job({"site": "linkedin", "title": nan, "company": "A", "job_url": "u"}) is None

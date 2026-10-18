@@ -13,9 +13,25 @@ Amazon:
 
 # Found via Step 5's live run: companies.yaml's display name didn't fuzzy-match the LCA legal
 # entity closely enough (missing "Associates"/"Global Markets" entirely drops below the 90 threshold).
+# BofA files under several entities; the bare "Bank of America" row has only 6 filings, so without this
+# the digest understated its sponsorship history (checked 2026-10-17).
+Bank of America:
+  - Bank of America N.A.
+  - Bank of America Corporation
+  - BofA Securities, Inc.
+  - Merrill Lynch
+  - Merrill Lynch Commodities Inc.
+
 Walmart:
   - Wal-Mart Associates, Inc.
 
 Citigroup:
   - Citibank, N.A.
   - Citigroup Global Markets Inc.
+
+CVS Health:
+  - CVS Shared Services Resources LLC
+  - Caremark LLC
+  - CVS Pharmacy Inc.
+  - Aetna Resources LLC
+  - CVS Rx Services Inc.

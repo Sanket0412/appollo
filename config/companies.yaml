@@ -136,6 +136,12 @@
   ats: ashby
   slug: plaid
   source: manual
+- name: CVS Health
+  ats: workday
+  host: cvshealth.wd1.myworkdayjobs.com
+  tenant: cvshealth
+  board: CVS_Health_Careers
+  source: manual
 # --- HN "Who is hiring" (scripts/seed_from_hn.py). Discovery may add here, never overwrite. ---
 - name: Smarkets
   ats: ashby
@@ -294,3 +300,6 @@
 - {name: Michelin, ats: workday, host: michelinhr.wd3.myworkdayjobs.com, tenant: michelinhr,
   board: Michelin, source: discovered}
 - {name: Anthropic, ats: greenhouse, slug: anthropic, source: discovered}
+- {name: Headway (NY), ats: ashby, slug: headway, source: discovered}
+- {name: NVIDIA, ats: workday, host: nvidia.wd5.myworkdayjobs.com, tenant: nvidia, board: NVIDIAExternalCareerSite,
+  source: discovered}

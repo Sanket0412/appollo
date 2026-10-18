@@ -8,7 +8,7 @@ never logged.
 from __future__ import annotations
 
 import html
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -17,6 +17,7 @@ from pipeline import geo
 from pipeline.log import get_logger
 from pipeline.score.rank import display_fit, update_rank_scores
 from pipeline.settings import REPO_ROOT, get_settings
+from pipeline.text_utils import normalize_company, title_norm
 
 DIGEST_DIR = REPO_ROOT / "data" / "digests"
 GROUPS = ("NYC metro", "DC / Philadelphia corridor", "Remote US", "Elsewhere US")
@@ -53,6 +54,7 @@ from public.jobs
 where status = 'scored'
   and rank_score is not null
   and fit_score >= %s
+  and (yoe_min is null or yoe_min <= %s)
   and posted_at >= now() - make_interval(days => %s)
 order by rank_score desc
 limit %s
@@ -62,7 +64,7 @@ limit %s
 def select_digest_jobs(conn) -> list[DigestJob]:
     cfg = get_settings().search_config
     with conn.cursor() as cur:
-        cur.execute(SELECT_SQL, (cfg["digest"]["min_core_fit"], cfg["max_posting_age_days"], cfg["digest"]["max_jobs"]))
+        cur.execute(SELECT_SQL, (cfg["digest"]["min_core_fit"], cfg["scoring"]["max_yoe_required"], cfg["max_posting_age_days"], cfg["digest"]["max_jobs"]))
         return [DigestJob(*row) for row in cur.fetchall()]
 
 
@@ -85,6 +87,30 @@ def group_of(job: DigestJob, geo_cfg: dict | None = None) -> str:
     if job.is_remote:
         return GROUPS[2]
     return GROUPS[3]
+
+
+def _location_rank(job: DigestJob, geo_cfg: dict) -> tuple[int, float]:
+    """Lower is better. Group first (NYC metro, corridor, remote, elsewhere), then miles to the nearest hub."""
+    group = GROUPS.index(group_of(job, geo_cfg))
+    miles = geo.nearest_hub_miles(geo.resolve_location(job.location), geo_cfg)
+    return group, miles if miles is not None else float("inf")
+
+
+def collapse_locations(jobs: list[DigestJob], geo_cfg: dict) -> list[DigestJob]:
+    """One row per company and title. The same posting in several cities keeps the location nearest NYC
+    (then D.C.), with "(+N other locations)" appended. Output keeps the input (rank) order."""
+    members: dict[tuple[str, str], list[DigestJob]] = {}
+    for job in jobs:
+        members.setdefault((normalize_company(job.company), title_norm(job.title)), []).append(job)
+    chosen: dict[str, DigestJob] = {}
+    for group in members.values():
+        best = min(group, key=lambda j: _location_rank(j, geo_cfg))  # min is stable, so ties keep rank order
+        if len(group) > 1:
+            n = len(group) - 1
+            best = replace(best, location=f"{best.location or 'Not stated'} (+{n} other location{'s' if n > 1 else ''})")
+        chosen[group[0].id] = best
+    # Position of each group = its first (highest ranked) member, so rank order is preserved.
+    return [chosen[j.id] for j in jobs if j.id in chosen]
 
 
 def group_jobs(jobs: list[DigestJob], geo_cfg: dict | None = None) -> dict[str, list[DigestJob]]:
@@ -214,11 +240,13 @@ def run_digest_stage(conn, mark: bool = True) -> DigestResult:
     """Ranks, selects, writes the markdown file, and (unless mark is False) flips the rows to digested."""
     now = datetime.now(timezone.utc)
     update_rank_scores(conn)
-    jobs = select_digest_jobs(conn)
-    grouped = group_jobs(jobs, get_settings().search_config["geo"])
+    all_jobs = select_digest_jobs(conn)
+    geo_cfg = get_settings().search_config["geo"]
+    jobs = collapse_locations(all_jobs, geo_cfg)
+    grouped = group_jobs(jobs, geo_cfg)
     markdown = render_markdown(grouped, now)
     path = write_digest(markdown, now)
     if mark:
-        mark_digested(conn, [j.id for j in jobs])
-    log.info("Digest: %d role(s) selected (marked digested: %s)", len(jobs), mark)
+        mark_digested(conn, [j.id for j in all_jobs])
+    log.info("Digest: %d role(s) selected, %d after merging locations (marked digested: %s)", len(all_jobs), len(jobs), mark)
     return DigestResult(jobs, markdown, render_html(grouped, now), path, mark, now)

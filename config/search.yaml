@@ -17,9 +17,6 @@ titles:
     - '\bdeep learning\b'
     - '\bresearch (engineer|scientist)\b.*\b(ml|ai|machine learning)\b'
     - '\bdecision scien'
-    - '\bresearch (scientist|engineer)\b'      # added 2026-10-16; the embedding step drops non-ML research roles
-    - '\bai (research|applications?)\b'
-    - '\bapplied research\b'
   exclude:          # none may match
     - '\bintern(ship)?\b'
     - '\bco-?op\b'
@@ -143,7 +140,7 @@ scoring:
   recency_max_points: 15        # shown in the digest: full points when posted just now, 0 at max_posting_age_days. Not part of core fit.
   min_similarity: 0.50          # chosen at Step 7 (2026-10-01); raise once irrelevant titles appear in larger runs
   max_per_run: 60
-  max_yoe_required: 5           # exclude when years_required_min > this, i.e. skip 6+ (candidate has about 4 years)
+  max_yoe_required: 4           # exclude when years_required_min > this, i.e. skip 5+ (candidate has about 4 years)
   batch_wait_minutes: 25
   fallback_sync: true
 

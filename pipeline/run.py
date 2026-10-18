@@ -19,6 +19,7 @@ from datetime import datetime, timedelta, timezone
 import yaml
 
 from pipeline.db import get_conn
+from pipeline.exclusions import load_excluded
 from pipeline.export import digest as digest_stage
 from pipeline.export import emailer
 from pipeline.fetchers import ashby, greenhouse, jobspy_fetcher, lever, workday
@@ -206,6 +207,7 @@ def _process(raw_jobs: list[RawJob], since: datetime, applied_history: prefilter
     settings = get_settings()
     cfg = settings.search_config
     out: list[Job] = []
+    excluded = load_excluded()
     for raw in raw_jobs:
         job = normalize(raw, cfg["locations"], cfg["geo"])
         keep, reason = prefilter.evaluate(
@@ -217,6 +219,7 @@ def _process(raw_jobs: list[RawJob], since: datetime, applied_history: prefilter
             red_flags=cfg["red_flags"],
             applied_history=applied_history,
             max_yoe=cfg["scoring"]["max_yoe_required"],
+            excluded_companies=excluded,
         )
         if keep:
             job = apply_lca(job)

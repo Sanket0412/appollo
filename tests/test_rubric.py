@@ -135,3 +135,14 @@ def test_recency_decays_linearly_to_zero_at_the_cap():
 def test_recency_zero_when_date_unknown_and_never_negative_age():
     assert rubric.recency_points(None, NOW, 15, 14) == 0
     assert rubric.recency_points(NOW + timedelta(hours=3), NOW, 15, 14) == 15
+
+
+def test_jobs_without_a_real_description_are_not_scorable():
+    from pipeline.score.batch import Job, has_description
+
+    def job(description):
+        return Job("id", "Acme", "AI Engineer", "New York, NY", description, None, False)
+
+    assert not has_description(job(None))
+    assert not has_description(job("   short   "))
+    assert has_description(job("x" * 250))
