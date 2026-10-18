@@ -483,6 +483,15 @@
   ats: greenhouse
   slug: attentive
   source: manual
+# SmartRecruiters (public Posting API, verified live 2026-10-18).
+- name: ServiceNow
+  ats: smartrecruiters
+  slug: ServiceNow
+  source: manual
+- name: Experian
+  ats: smartrecruiters
+  slug: Experian
+  source: manual
 # --- HN "Who is hiring" (scripts/seed_from_hn.py). Discovery may add here, never overwrite. ---
 - name: Smarkets
   ats: ashby

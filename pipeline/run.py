@@ -22,7 +22,14 @@ from pipeline.db import get_conn
 from pipeline.exclusions import load_excluded
 from pipeline.export import digest as digest_stage
 from pipeline.export import emailer
-from pipeline.fetchers import ashby, greenhouse, jobspy_fetcher, lever, workday
+from pipeline.fetchers import (
+    ashby,
+    greenhouse,
+    jobspy_fetcher,
+    lever,
+    smartrecruiters,
+    workday,
+)
 from pipeline.filters import prefilter
 from pipeline.filters.dedup import ATS_SOURCES, canonical_id, source_priority
 from pipeline.log import get_logger
@@ -40,6 +47,7 @@ FETCHERS = {
     "lever": lever.fetch,
     "ashby": ashby.fetch,
     "workday": workday.fetch,
+    "smartrecruiters": smartrecruiters.fetch,
 }
 
 log = get_logger("run")
@@ -133,8 +141,8 @@ on conflict (id) do update set
     url = excluded.url,
     description = excluded.description,
     ats_job_id = excluded.ats_job_id
-where jobs.source not in ('greenhouse', 'lever', 'ashby', 'workday')
-  and excluded.source in ('greenhouse', 'lever', 'ashby', 'workday')
+where jobs.source not in ('greenhouse', 'lever', 'ashby', 'workday', 'smartrecruiters')
+  and excluded.source in ('greenhouse', 'lever', 'ashby', 'workday', 'smartrecruiters')
 returning (xmax = 0) as inserted
 """
 

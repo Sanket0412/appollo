@@ -60,3 +60,8 @@ def test_looks_like_test_board_tolerates_a_minority_of_noise():
     # One odd title among many real ones shouldn't sink an otherwise-real board.
     titles = ["Data Scientist", "ML Engineer", "Backend Engineer", "test"]
     assert looks_like_test_board(titles) is False
+
+
+def test_parses_smartrecruiters_url():
+    ref = parse_ats_url("https://jobs.smartrecruiters.com/ServiceNow/744000156132859-senior-engineer")
+    assert ref == AtsRef(ats="smartrecruiters", slug="ServiceNow")

@@ -7,6 +7,7 @@ The full build spec lives in `docs/BUILD_PLAN.md`. Read it before starting any s
 ## How to work in this repo
 
 - Build one step of `docs/BUILD_PLAN.md` at a time. After each step, stop, tell Sanket exactly how to test it, and wait for his confirmation before starting the next step.
+- After every task, update `docs/progress.md` (step status, a dated changelog line, open items) in the same commit.
 - Commit after each step passes, with a message like `step 4: ATS fetchers`.
 - Before relying on any API endpoint, response field, library version, model name or price, verify it against current official docs or a live request. Tell Sanket what you verified and what you could not.
 - Pin dependency versions in `requirements.txt` only after confirming they install and import cleanly.

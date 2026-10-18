@@ -142,3 +142,26 @@ def test_workday_location_keeps_list_text_when_country_already_in_it():
 
 def test_workday_location_none_when_nothing_known():
     assert workday._resolve_location(None, {}) is None
+
+
+def test_smartrecruiters_filters_titles_and_maps_fields(monkeypatch):
+    from pipeline.fetchers import smartrecruiters
+
+    listing = {
+        "totalFound": 3,
+        "content": [
+            {"id": "1", "name": "Senior Machine Learning Engineer", "releasedDate": "2026-10-16T15:00:00.000Z",
+             "location": {"city": "New York", "region": "NY", "country": "us", "remote": False, "fullLocation": "New York, NY, United States"}},
+            {"id": "2", "name": "Retail Store Manager", "releasedDate": "2026-10-16T15:00:00.000Z", "location": {}},
+            {"id": "3", "name": "Data Scientist", "releasedDate": "2020-01-01T00:00:00.000Z", "location": {}},
+        ],
+    }
+    detail = {"postingUrl": "https://jobs.smartrecruiters.com/Acme/1-ml", "jobAd": {"sections": {
+        "jobDescription": {"title": "Job Description", "text": "<p>Build models.</p>"},
+        "qualifications": {"title": "Qualifications", "text": "<p>3+ years of experience.</p>"}}}}
+    monkeypatch.setattr(smartrecruiters, "get_json", lambda url: detail if url.endswith("/postings/1") else listing)
+    jobs = smartrecruiters.fetch(CompanyConfig(name="Acme", ats="smartrecruiters", slug="Acme"), since=datetime(2026, 1, 1, tzinfo=timezone.utc))
+    assert [j.ats_job_id for j in jobs] == ["1"]
+    job = jobs[0]
+    assert job.source == "smartrecruiters" and job.location == "New York, NY, United States"
+    assert job.url == "https://jobs.smartrecruiters.com/Acme/1-ml" and "3+ years" in job.description_text

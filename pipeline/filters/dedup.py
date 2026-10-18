@@ -10,7 +10,7 @@ from pipeline.text_utils import title_norm
 _PUNCT_RE = re.compile(r"[^\w\s]")
 _WHITESPACE_RE = re.compile(r"\s+")
 
-ATS_SOURCES = frozenset({"greenhouse", "lever", "ashby", "workday"})
+ATS_SOURCES = frozenset({"greenhouse", "lever", "ashby", "workday", "smartrecruiters"})
 
 
 def location_norm(location: str | None) -> str:

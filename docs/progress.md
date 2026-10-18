@@ -42,8 +42,8 @@ marking anything digested, and the first manual GitHub Actions run in Step 11.
 | 9 | Ranking and digest | **Built and tested**, first digest written, awaiting Sanket's review before anything is marked digested | Digest review; `cap_exempt` tag needs a migration decision |
 | 11 | GitHub Actions | **Done**; scheduled runs #17 to #33 and manual #22 passed, but scheduled starts are 3 to 4 hours late | Optional: move the cron earlier |
 | 6 | JobSpy fetcher, local schedule, auto-discovery (source G) | **Built and tested**; real run 30 stored 387 rows (47 kept). Scheduled task not registered yet | Sanket registers the Windows task (README) |
-| 10 | Tracker import/export and mark_applied | Not started | Step 9; Sanket has no tracker file yet — `import_tracker.py` must handle a missing file gracefully |
-| 12 | Review console and assisted apply | Not started | Step 11; Supabase MCP server details |
+| 10 | Tracker import/export and mark_applied | **Built and tested**, committed 2026-10-18 | Sanket's first real use; he has no tracker file yet (import handles that) |
+| 12 | Review console and assisted apply | **Documented**; waiting on Sanket to add and authenticate the Supabase MCP server (README) | Sanket runs the `claude mcp add` command |
 
 Status values: `Not started`, `In progress`, `Built — awaiting test confirmation`, `Done`, `Blocked`.
 
@@ -91,6 +91,16 @@ See [DECISIONS.md](./DECISIONS.md) for resolved decisions and open questions (Sm
 
 - **2026-10-01** — Sanket's decisions applied. Migration 002 (`cap_exempt`) applied and populated; first digest emailed to `DIGEST_TO` and its 12 rows marked digested (run 11). Scoring changed to evidence-based skills (see `DECISIONS.md`) and evaluated read-only on 13 jobs; `min_core_fit` unchanged at 50. Step 11 built: `.github/workflows/daily-job-scan.yml` (10:00 America/New_York, `workflow_dispatch` with 24h/7d/14d) and `.github/workflows/tests.yml`; 165 tests pass from a clean checkout. Pipeline logs counts only in CI.
 
-**Resume point if this session ends here:** Steps 1-5, 7-9 and 11 are committed. Waiting on Sanket to trigger the first manual `daily-job-scan` run (stop rule) and to pick `min_core_fit` after the scoring evaluation. Then Step 6 (JobSpy), 10 (tracker), 12 (review console).
+**Older resume point (2026-10-01):** Steps 1-5, 7-9 and 11 are committed. Waiting on Sanket to trigger the first manual `daily-job-scan` run (stop rule) and to pick `min_core_fit` after the scoring evaluation. Then Step 6 (JobSpy), 10 (tracker), 12 (review console).
 
 - **2026-10-16** — Step 6 built. `pipeline/fetchers/jobspy_fetcher.py` (CI guard, 2 sites, NYC plus remote searches, source G discovery limited to DS/ML-titled rows and skipped on dry runs); shared board helpers moved into `pipeline/ats_discovery.py`; `run.py` wires `--sources jobspy`. Live check 2026-10-16: Indeed and LinkedIn return rows; Glassdoor and ZipRecruiter return 403/400 and Google returns 0, so `jobspy.sites` is `[indeed, linkedin]`. Real run 30 stored 387 rows, 47 kept, 5 boards discovered. Removed 9 companies from `companies.yaml` at Sanket's request. A proposed 90-company list (30 AI startups with NYC hiring, 60 mid and large) is in `data/private/proposed_90_companies.yaml`, not yet applied. 168 tests pass.
+
+- **2026-10-18** — Review and improvement session. All 185 tests pass, ruff clean.
+  - **YOE filter.** `max_yoe_required` is now 4 (skip 5+ years). The matcher takes the smaller figure of a range, and also reads "or more", "Five (5) years" and "6 years building/working with". The digest also hides scored rows above the limit.
+  - **Root cause of the Welltower mismatch.** The row had no description (LinkedIn search rows sometimes arrive without one), so Haiku invented "3+ years" and a summary. Fix: jobs under 200 characters of description are never scored; local runs refetch the description once from the public LinkedIn page (stops on a sign-up redirect or 429), and jobs still without one stay shortlisted.
+  - **Dateless JobSpy rows** are dated now instead of dropped (190 of 460 LinkedIn rows in two days were being excluded as `no_posted_at`). ATS rows still need a real date. See `DECISIONS.md`.
+  - **Companies.** Added CVS Health (Workday) with LCA aliases; added 85 validated boards from the reviewed 90-company list (5 were already present); 154 entries in total plus 2 SmartRecruiters. Bank of America alias added.
+  - **SmartRecruiters fetcher** (`pipeline/fetchers/smartrecruiters.py`, public Posting API, verified live): ServiceNow and Experian added; URL parsing and board validation support it. No migration needed (`jobs.source` has no check constraint). Greenhouse already had a fetcher; it covers 70+ boards now.
+  - **Step 10.** `scripts/mark_applied.py` (applied, `--skip --reason`, `--list`, `--skip-rest`), `pipeline/tracking.py`, tracker export to `data/tracker.md`/`.csv`, `scripts/import_tracker.py`. Skipped roles keep their reason in `exclude_reason` as `skip:<reason>`; roles never acted on stay `digested`. `scripts/calibration.py` compares the scorer with those decisions.
+  - **Housekeeping.** `.gitattributes` added; `run_local.ps1` now logs plain UTF-8 through `cmd`; README documents the review loop and the Supabase MCP command.
+  - **Pending.** Item 10 of the improvement list (GitHub Actions start delay) and item 12 (unresolved companies such as Weill Cornell) are deliberately deferred. Scoring recalibration waits for roughly 15 to 20 marked decisions.

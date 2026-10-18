@@ -52,6 +52,9 @@ def parse_ats_url(url: str) -> AtsRef | None:
     if host == "jobs.lever.co" and segments:
         return AtsRef(ats="lever", slug=segments[0])
 
+    if host in ("jobs.smartrecruiters.com", "careers.smartrecruiters.com") and segments:
+        return AtsRef(ats="smartrecruiters", slug=segments[0])
+
     if host == "jobs.ashbyhq.com" and segments:
         return AtsRef(ats="ashby", slug=segments[0])
 
@@ -94,6 +97,12 @@ def _fetch_job_titles(ref: AtsRef) -> list[str] | None:
             if resp.status_code != 200:
                 return None
             return [j.get("title", "") for j in resp.json().get("jobs", [])]
+
+        if ref.ats == "smartrecruiters":
+            resp = requests.get(f"https://api.smartrecruiters.com/v1/companies/{ref.slug}/postings?limit=100", timeout=REQUEST_TIMEOUT)
+            if resp.status_code != 200:
+                return None
+            return [j.get("name", "") for j in resp.json().get("content", [])]
 
         if ref.ats == "workday":
             resp = requests.post(

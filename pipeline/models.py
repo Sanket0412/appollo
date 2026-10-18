@@ -9,10 +9,10 @@ from pydantic import BaseModel
 
 class CompanyConfig(BaseModel):
     name: str
-    ats: str  # greenhouse | lever | ashby | workday
+    ats: str  # greenhouse | lever | ashby | workday | smartrecruiters
     source: str = "manual"  # manual | hn | discovered
     cap_exempt: bool = False
-    slug: str | None = None  # greenhouse | lever | ashby
+    slug: str | None = None  # greenhouse | lever | ashby | smartrecruiters
     host: str | None = None  # workday
     tenant: str | None = None  # workday
     board: str | None = None  # workday
