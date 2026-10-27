@@ -1,0 +1,38 @@
+{
+ "error": null,
+ "hits": 1,
+ "jobs": [
+  {
+   "basic_qualifications": "- 2+ years of data scientist or similar role involving data extraction, analysis, statistical modeling and communication experience<br/>- 2+ years of data querying languages (e.g. SQL, Hadoop/Hive) experience<br/>- 3+ years of machine learning/statistical modeling data analysis tools and techniques, and parameters that affect their performance experience<br/>- Master's degree in a quantitative field, or Bachelor's degree and 5+ years of a quantitative field such as statistics, mathematics, data science, business analytics, economics, finance, engineering, or computer science experience<br/>- Experience applying theoretical models in an applied environment",
+   "business_category": "operations",
+   "city": "Sydney",
+   "company_name": "Amazon Commercial Services Pty Ltd",
+   "country_code": "AUS",
+   "description": "Amazon\u2019s operations in Australia is at a unique phase of rapid expansion. As our selection and local fulfilment network grows, the complexity of managing supply chain increases. To systemically address these complexities, we are establishing a team of subject matter experts by expanding Supply Chain Optimisation Technology (SCOT) team presence to Australia. We are looking for an exceptional Data Scientist to join this specialised team and help build the analytical foundations that allow us to automate and optimise our local supply chain at scale.<br/><br/>Key job responsibilities<br/>- Build Predictive Models: Design, develop, and deploy machine learning models (e.g., time-series forecasting, regression, classification) to predict inbound volumes, leveraging signals from demand forecasts, vendor behaviour, and upstream planning systems unique to the Australian supply chain.<br/>- Drive Root-Cause Analysis: Apply statistical methods and causal inference techniques to quantify defect attributions across plan-over-plan changes, actuals-over-plan variances, and forecast accuracy degradation, translating complex analytical findings into actionable insights for stakeholders.<br/>- Enable Automated Intelligence: Leverage agentic workflows and LLM-based pipelines to build self-improving prediction systems for inbound volumes, automating feature engineering, model retraining, and anomaly detection to replace manual heuristics.<br/>- Advance Experimentation: Design and execute A/B tests and counterfactual analyses to measure the impact of supply chain interventions (e.g., buying policy changes, capacity adjustments) on inbound volume outcomes, providing rigorous evidence for decision-making.<br/>- Influence Strategy: Synthesise insights across product demand forecasting accuracy, inventory efficiency, and capacity planning to build data-driven narratives that influence inbound volume projections and supply chain strategy at the leadership level.<br/><br/>About the team<br/>Have you ever ordered a product on Amazon and wondered how it got to you so fast? Wondered where it came from and how much it cost? If so, Amazon's Supply Chain Optimisation Technology (SCOT) organisation is for you. At SCOT, we solve deep technical problems and build innovative solutions in a fast-paced environment. Learn more about SCOT: http://bit.ly/amazon-scot.",
+   "department_cost_center": null,
+   "description_short": "Amazon\u2019s operations in Australia is at a unique phase of rapid expansion. As our selection and local fulfilment network grows, the complexity of managing supply chain increases. To systemically address",
+   "display_distance": null,
+   "id": "82fa6a9f-3ece-4871-b9c2-c7c6523a861b",
+   "id_icims": "10509589",
+   "is_intern": null,
+   "is_manager": null,
+   "job_category": "Data Science",
+   "job_family": "Science",
+   "job_function_id": null,
+   "job_path": "/en/jobs/10509589/data-scientist",
+   "job_schedule_type": "full-time",
+   "location": "AU, NSW, Sydney",
+   "normalized_location": "Sydney, New South Wales, AUS",
+   "posted_date": "August 20, 2026",
+   "preferred_qualifications": "- Experience in Python, Perl, or another scripting language<br/>- Experience in a ML or data scientist role with a large technology company<br/><br/>Acknowledgement of country:<br/>In the spirit of reconciliation Amazon acknowledges the Traditional Custodians of country throughout Australia and their connections to land, sea and community. We pay our respect to their elders past and present and extend that respect to all Aboriginal and Torres Strait Islander peoples today.<br/><br/>IDE statement:<br/>Amazon is an equal opportunity employer and does not discriminate on the basis of protected veteran status, disability, or other legally protected status.<br/><br/>Our inclusive culture empowers Amazonians to deliver the best results for our customers. If you have a disability and need a workplace accommodation or adjustment during the application and hiring process, including support for the interview or onboarding process, please visit <a href=\"https://amazon.jobs/content/en/how-we-hire/accommodations\">https://amazon.jobs/content/en/how-we-hire/accommodations</a> for more information. If the country/region you\u2019re applying in isn\u2019t listed, please contact your Recruiting Partner.",
+   "primary_search_label": "operations.team-supply-chain-optimization",
+   "source_system": "JobCreator",
+   "state": "NSW",
+   "title": "Data Scientist",
+   "university_job": null,
+   "updated_time": "2 months",
+   "url_next_step": "https://account.amazon.jobs/jobs/10509589/apply"
+  }
+ ],
+ "job_posting_search_request": "{\"jobPostingSearchRequest\":{\"query\":\"data scientist\",\"excludeFacets\":[{\"name\":\"businessCategory\",\"values\":[{\"name\":\"a-confidential-job\"}]},{\"name\":\"isPostedExternally\",\"values\":[{\"name\":\"0\"}]},{\"name\":\"isUnsearchable\",\"values\":[{\"name\":\"1\"}]}],\"filterFacets\":[],\"start\":\"0\",\"size\":\"2\",\"sort\":{\"sortOrder\":\"DESCENDING\",\"sortType\":\"SCORE\"},\"location\":null,\"accessLevel\":\"EXTERNAL\",\"includeFacets\":[],\"locationFacets\":[],\"jobTypeFacets\":[],\"contentFilterFacets\":[],\"treatment\":\"OM\"}}"
+}

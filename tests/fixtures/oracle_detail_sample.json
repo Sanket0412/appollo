@@ -1,0 +1,24 @@
+{
+ "items": [
+  {
+   "Id": "210804115",
+   "Title": "Data Scientist, Senior Associate",
+   "ExternalPostedStartDate": "2026-10-26T21:05:35+00:00",
+   "ExternalDescriptionStr": "<p><span><strong>Job summary:</strong></span><br>\n As a<span> Senior Associate for our CCB Affluent Data &amp; Analytics team you will have an opportunity to support the Affluent channel initiatives within the CCB Affluent segment. &nbsp;You will partner with Affluent strategy, Sales, and Product / Program teams to solve key business problems utilizing data-driven approaches.&nbsp; You'll drive analyses for sales journeys, Program Expansion, as well as banker / affluent channel studies with a focus on productivity and optimization. &nbsp;You will partner directly with our internal clients to develop, implement, and track strategic initiatives from a data &amp; analytics perspective while owning the end to end analytics journey to produce insights. This role requires strong analytical and technical skills, excellent problem-solving abilities, and effective communication skills.&nbsp;</span></p>\n<p><br><span><strong>Job responsibilities:</strong></span></p>\n<ul>\n <li><span>Partner with business and technology teams to set quantifiable goals, advise on strategies, and experiments to achieve business objectives.</span></li>\n <li><span>Act as subject matter expert and drive analytics efforts to produce affluent channel and banker level insights.&nbsp;</span></li>\n <li><span>Lead execution of KPIs, trend analysis, and dashboards to improve and monitor business performance.</span></li>\n <li><span>Communicating and interfacing with stakeholders, leveraging a blend of analytical skills and business acumen to produce impactful results.</span></li>\n <li><span>Partner with stakeholders to solve quantitative problems related to optimizing business processes and performance insights using various analytic methods.</span></li>\n <li><span>End to End project ownership, encompassing tasks such as gathering detailed requirements, data preparation, result generation, and data visualization.&nbsp;</span></li>\n <li><span>Uphold the highest standards of data integrity and security, aligning with both internal and external regulatory requirements and compliance protocols.</span></li>\n <li>\n  <p><span>Stay updated on industry trends as well as test new tools and techniques to address business challenges.</span></p>\n  <p>&nbsp;</p></li>\n</ul>\n<p><span><strong>&nbsp;Required qualifications, capabilities, and skills:</strong></span></p>\n<ul>\n <li><span>Masters in a related field, or Bachelors with 3+ years of experience in a related discipline&nbsp;(Computer Science, Operational Research, Physics, Mathematics, Neuroscience, Engineering, Econometrics, Statistics, Other Sciences etc.) or equivalent</span></li>\n <li><span>Strong proficiency in mix of programming languages and Business Intelligence (BI) tools such as SQL, Python, Tableau, and/or Alteryx.</span></li>\n <li><span>Experience defining business KPIs and establishing measurement frameworks.</span></li>\n <li><span>Proven ability to work in a fast-paced environment, meet deadlines. Must be detail oriented, organized, and perform at high standards.</span></li>\n <li><span>Proficiency in Advanced Statistical methods and concepts, predictive modeling, time series forecasting, and/or text mining</span></li>\n <li><span>Experience in Cloud and Big Data platforms such as AWS, Snowflake, Hadoop, Hive, Pig, Apache Spark, etc.</span></li>\n <li><span>Strong story telling skills including communicating complex concepts effectively to CCB business stakeholders.</span></li>\n</ul>",
+   "ExternalResponsibilitiesStr": "",
+   "ExternalQualificationsStr": ""
+  }
+ ],
+ "count": 1,
+ "hasMore": false,
+ "limit": 499,
+ "offset": 0,
+ "links": [
+  {
+   "rel": "self",
+   "href": "https://jpmc.fa.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/recruitingCEJobRequisitionDetails",
+   "name": "recruitingCEJobRequisitionDetails",
+   "kind": "collection"
+  }
+ ]
+}

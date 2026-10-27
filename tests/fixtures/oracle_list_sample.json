@@ -1,0 +1,131 @@
+{
+ "items": [
+  {
+   "TotalJobsCount": 2,
+   "requisitionList": [
+    {
+     "Id": "210804115",
+     "Title": "Data Scientist, Senior Associate",
+     "PostedDate": "2026-10-26",
+     "PostingEndDate": null,
+     "Language": "US",
+     "PrimaryLocationCountry": "US",
+     "GeographyId": 300000020694784,
+     "HotJobFlag": false,
+     "WorkplaceTypeCode": null,
+     "JobFamily": "Predictive Science",
+     "JobFunction": "Data & Analytics",
+     "WorkerType": null,
+     "ContractType": null,
+     "ManagerLevel": null,
+     "JobSchedule": null,
+     "JobShift": null,
+     "JobType": null,
+     "StudyLevel": null,
+     "DomesticTravelRequired": null,
+     "InternationalTravelRequired": null,
+     "WorkDurationYears": null,
+     "WorkDurationMonths": null,
+     "WorkHours": null,
+     "WorkDays": null,
+     "LegalEmployer": null,
+     "BusinessUnit": null,
+     "Department": null,
+     "Organization": null,
+     "BusinessUnitId": 300000086610208,
+     "LegalEmployerId": 300000087185180,
+     "OrganizationId": 300050210572499,
+     "MediaThumbURL": null,
+     "ShortDescriptionStr": "Senior Associate driving CCB Affluent analytics to optimize sales journeys, banker productivity, and program growth.",
+     "PrimaryLocation": "Brooklyn, NY, United States",
+     "Distance": 1792972800000.0,
+     "TrendingFlag": false,
+     "BeFirstToApplyFlag": false,
+     "Relevancy": 88.62890625,
+     "WorkplaceType": "",
+     "ExternalQualificationsStr": null,
+     "ExternalResponsibilitiesStr": null,
+     "secondaryLocations": []
+    },
+    {
+     "Id": "210800508",
+     "Title": "Senior Analytics Engineer, Senior Associate of Morgan Health",
+     "PostedDate": "2026-10-26",
+     "PostingEndDate": null,
+     "Language": "US",
+     "PrimaryLocationCountry": "US",
+     "GeographyId": 300000020694566,
+     "HotJobFlag": false,
+     "WorkplaceTypeCode": null,
+     "JobFamily": "Analytics Solutions & Delivery",
+     "JobFunction": "Data & Analytics",
+     "WorkerType": null,
+     "ContractType": null,
+     "ManagerLevel": null,
+     "JobSchedule": null,
+     "JobShift": null,
+     "JobType": null,
+     "StudyLevel": null,
+     "DomesticTravelRequired": null,
+     "InternationalTravelRequired": null,
+     "WorkDurationYears": null,
+     "WorkDurationMonths": null,
+     "WorkHours": null,
+     "WorkDays": null,
+     "LegalEmployer": null,
+     "BusinessUnit": null,
+     "Department": null,
+     "Organization": null,
+     "BusinessUnitId": 300000086610244,
+     "LegalEmployerId": 300000087185180,
+     "OrganizationId": 300000522286310,
+     "MediaThumbURL": null,
+     "ShortDescriptionStr": "Help advance Morgan Health\u2019s mission: better care for JPMorgan Chase plan members and across employer-sponsored insurance.",
+     "PrimaryLocation": "New York, NY, United States",
+     "Distance": 1792972800000.0,
+     "TrendingFlag": false,
+     "BeFirstToApplyFlag": false,
+     "Relevancy": 15.56043529510498,
+     "WorkplaceType": "",
+     "ExternalQualificationsStr": null,
+     "ExternalResponsibilitiesStr": null,
+     "secondaryLocations": [
+      {
+       "RequisitionLocationId": 300097471254862,
+       "GeographyNodeId": 100302248440515,
+       "GeographyId": 300000020705795,
+       "Name": "Washington, DC, United States",
+       "CountryCode": "US",
+       "Latitude": 38.89037,
+       "Longitude": -77.03196
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "count": 1,
+ "hasMore": false,
+ "limit": 200,
+ "offset": 0,
+ "links": [
+  {
+   "rel": "self",
+   "href": "https://jpmc.fa.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/recruitingCEJobRequisitions",
+   "name": "recruitingCEJobRequisitions",
+   "kind": "collection"
+  },
+  {
+   "rel": "action",
+   "href": "https://jpmc.fa.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/recruitingCEJobRequisitions/action/getRequisitionsLocationCoordinates",
+   "name": "getRequisitionsLocationCoordinates",
+   "kind": "other"
+  },
+  {
+   "rel": "action",
+   "href": "https://jpmc.fa.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/recruitingCEJobRequisitions/action/getRequisitionDetailsForMap",
+   "name": "getRequisitionDetailsForMap",
+   "kind": "other"
+  }
+ ]
+}

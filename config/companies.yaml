@@ -653,3 +653,29 @@
 - {name: Headway (NY), ats: ashby, slug: headway, source: discovered}
 - {name: NVIDIA, ats: workday, host: nvidia.wd5.myworkdayjobs.com, tenant: nvidia, board: NVIDIAExternalCareerSite,
   source: discovered}
+- {name: Kaizen, ats: ashby, slug: kaizenlabs, source: discovered}
+- {name: Timberland, ats: workday, host: vfc.wd5.myworkdayjobs.com, tenant: vfc, board: vfc_careers,
+  source: discovered}
+- {name: Blossom Health, ats: ashby, slug: Blossom-Health, source: discovered}
+- {name: Church & Dwight Co., ats: workday, host: churchdwight.wd1.myworkdayjobs.com,
+  tenant: churchdwight, board: chdcareers, source: discovered}
+- {name: Visa, ats: workday, host: visa.wd5.myworkdayjobs.com, tenant: visa, board: Visa,
+  source: discovered}
+- {name: Embedding VC, ats: ashby, slug: embedding-vc, source: discovered}
+- {name: VEIT, ats: workday, host: veitusa.wd503.myworkdayjobs.com, tenant: veitusa,
+  board: Veit, source: discovered}
+- {name: Spring Health, ats: ashby, slug: deaa6ad2-d184-436b-b69e-17f761da1d94, source: discovered}
+- {name: Capital One, ats: workday, host: capitalone.wd12.myworkdayjobs.com, tenant: capitalone, board: Capital_One,
+  source: manual}
+- {name: Brookhaven National Laboratory, ats: workday, host: bnl.wd1.myworkdayjobs.com, tenant: bnl, board: Externa,
+  source: manual}
+- {name: Fluidstack, ats: ashby, slug: fluidstack, source: manual}
+- {name: JPMorgan Chase, ats: oracle_rc, host: jpmc.fa.oraclecloud.com, site: CX_1001, source: manual}
+- {name: Icahn School of Medicine at Mount Sinai, ats: oracle_rc, host: ejis.fa.us6.oraclecloud.com,
+  site: CX, cap_exempt: true, source: manual}
+- {name: Microsoft, ats: eightfold, host: apply.careers.microsoft.com, site: microsoft.com, board: pcsx,
+  source: manual}
+- {name: Millennium Management, ats: eightfold, host: mlp.eightfold.ai, site: mlp.com, board: apply,
+  source: manual}
+- {name: Amazon, ats: amazon, source: manual}
+- {name: Audible, ats: amazon, site: Audible, source: manual}

@@ -1,0 +1,32 @@
+{
+ "count": 50,
+ "positions": [
+  {
+   "id": 755959070627,
+   "name": "Quant Researcher/Data Scientist - Volatility Alpha Technology",
+   "posting_name": "Quant Researcher/Data Scientist - Volatility Alpha Technology",
+   "location": "New York, New York, United States of America",
+   "locations": [
+    "New York, New York, United States of America"
+   ],
+   "hot": 0,
+   "department": "Information Technology",
+   "business_unit": "Equity IT",
+   "t_update": 1791244800,
+   "t_create": 1791244800,
+   "ats_job_id": "REQ-31408",
+   "display_job_id": "REQ-31408",
+   "type": "ATS",
+   "id_locale": "REQ-31408-en-US",
+   "job_description": "",
+   "locale": "en-US",
+   "stars": 0.0,
+   "medallionProgram": null,
+   "location_flexibility": "flexible_within_country",
+   "work_location_option": "onsite",
+   "canonicalPositionUrl": "https://mlp.eightfold.ai/careers/job/755959070627",
+   "isPrivate": false,
+   "latlongs": "40.7127753,-74.0059728"
+  }
+ ]
+}

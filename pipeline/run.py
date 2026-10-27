@@ -23,10 +23,13 @@ from pipeline.exclusions import load_excluded
 from pipeline.export import digest as digest_stage
 from pipeline.export import emailer
 from pipeline.fetchers import (
+    amazon,
     ashby,
+    eightfold,
     greenhouse,
     jobspy_fetcher,
     lever,
+    oracle_rc,
     smartrecruiters,
     undated,
     workday,
@@ -49,6 +52,9 @@ FETCHERS = {
     "ashby": ashby.fetch,
     "workday": workday.fetch,
     "smartrecruiters": smartrecruiters.fetch,
+    "oracle_rc": oracle_rc.fetch,
+    "eightfold": eightfold.fetch,
+    "amazon": amazon.fetch,
 }
 
 log = get_logger("run")
@@ -142,8 +148,8 @@ on conflict (id) do update set
     url = excluded.url,
     description = excluded.description,
     ats_job_id = excluded.ats_job_id
-where jobs.source not in ('greenhouse', 'lever', 'ashby', 'workday', 'smartrecruiters')
-  and excluded.source in ('greenhouse', 'lever', 'ashby', 'workday', 'smartrecruiters')
+where jobs.source <> all(%(ats_sources)s)
+  and excluded.source = any(%(ats_sources)s)
 returning (xmax = 0) as inserted
 """
 
@@ -194,6 +200,7 @@ def upsert_job(conn, job: Job) -> str:
                 "lca_match_score": job.lca_match_score,
                 "status": job.status,
                 "exclude_reason": job.exclude_reason,
+                "ats_sources": sorted(ATS_SOURCES),
             },
         )
         row = cur.fetchone()

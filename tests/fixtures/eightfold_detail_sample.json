@@ -1,0 +1,54 @@
+{
+ "status": 200,
+ "error": {
+  "message": "",
+  "body": ""
+ },
+ "data": {
+  "id": 755959070627,
+  "displayJobId": "REQ-31408",
+  "name": "Quant Researcher/Data Scientist - Volatility Alpha Technology",
+  "locations": [
+   "New York, New York, United States of America"
+  ],
+  "standardizedLocations": [
+   "New York, NY, US"
+  ],
+  "postedTs": 1791331200,
+  "stars": 0,
+  "department": "Information Technology",
+  "creationTs": 1791244800,
+  "jobDescription": "Quant Researcher/Data Scientist - Volatility Alpha Technology<p></p><p></p><p><b>About Millennium</b><br>Millennium is a global, diversified alternative investment firm, founded in 1989. Defined by evolution, innovation and focus, Millennium\u2019s mission is to deliver results for our investors.</p><br><p>Our people are empowered with both independence and support: the autonomy to pursue ideas with conviction and the backing of a global network committed to collaboration, disciplined risk management and continuous learning. With opportunities to deepen expertise and accelerate development, talent at Millennium is equipped to adapt, evolve and build lasting impact over time. Discover how transformative growth accelerates impact.</p><br><p><b>Meet the Team</b><br>The Information Technology department is core to the health and growth of Millennium\u2019s active, multi-manager business model, developing flexible, scalable technology and advanced proprietary systems that support next-generation analytical and trading capabilities.</p><br><p>The Volatility Alpha Development team is the core quantitative and strategy group supporting Millennium\u2019s global volatility business. The team builds and maintains systematic options datasets, backtesting infrastructure, event volatility models, and live systematic volatility-fitting frameworks. Working at the intersection of quantitative research and real-world investment processes, the team supports Portfolio Managers across global volatility strategies.</p><br><p><b>What You'll Do</b><br></p><ul><li>Conduct quantitative research on market volatility, including volatility surface fitting, systematic options P&amp;L dataset generation, event volatility analysis, alternative data research, AI-based hypothesis testing, and backtesting platform development.</li><li>Research global systematic options markets, including single-stock versus index spreads and bespoke ETFs, to develop datasets and prototype strategies that support alpha-focused investment processes.</li><li>Combine financial intuition with statistical learning techniques to develop predictive models for use in the investment process.</li><li>Build robust quantitative research infrastructure and systematic datasets for global options and volatility markets.</li><li>Partner with Senior Portfolio Managers to integrate Volatility Alpha Development datasets into investment strategies and risk-management workflows.</li><li>Contribute to prototype alpha strategy development across the Volatility Alpha Development platform.</li></ul><br><p><b>What You Bring</b><br></p><ul><li>Master\u2019s degree or PhD in a quantitative STEM field, such as Physics, Mathematics, Statistics, Engineering, or Operations Research.</li><li>At least three years of experience in investment management or a quantitative research environment.</li><li>Strong programming skills in Python, R, MATLAB, or C++</li><li> Deep knowledge of financial markets, particularly options and derivatives.</li><li>Experience with machine learning, statistical modeling, and data visualization.</li><li>Experience across Equity, Commodities, Foreign Exchange, or Interest Rates markets.</li><li>Excellent analytical, problem-solving, and communication skills.</li></ul><p><br><br></p><p>Millennium offers a total compensation package which includes a base salary, discretionary performance bonus, and comprehensive benefits. The estimated base salary range for this position is $175,000 to $250,000, which is specific to New York City and may change in the future. When finalizing an offer, we take into consideration an individual\u2019s experience level and the qualifications they bring to the role to formulate a competitive total compensation package.</p>",
+  "location": "New York, New York, United States of America",
+  "isHot": 0,
+  "workLocationOption": "onsite",
+  "locationFlexibility": "flexible_within_country",
+  "atsJobId": "REQ-31408",
+  "positionUrl": "/careers/job/755959070627",
+  "publicUrl": "https://mlp.eightfold.ai/careers/job/755959070627",
+  "jdHighlight": [
+   "Experience with machine learning, statistical modeling, and data visualization.",
+   "Experience across Equity, Commodities, Foreign Exchange, or Interest Rates markets.",
+   "Contribute to prototype alpha strategy development across the Volatility Alpha Development platform.",
+   "Partner with Senior Portfolio Managers to integrate Volatility Alpha Development datasets into investment strategies and risk-management workflows.",
+   "Build robust quantitative research infrastructure and systematic datasets for global options and volatility markets."
+  ],
+  "positionExtraDetails": {
+   "videos": [],
+   "blogs": [],
+   "perks": [],
+   "pymww": {
+    "people": [],
+    "count": 0
+   },
+   "customContent": []
+  },
+  "positionUserActions": {
+   "isSaved": false,
+   "applyAction": {
+    "status": "allowed"
+   }
+  }
+ },
+ "metadata": null
+}
