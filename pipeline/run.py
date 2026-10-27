@@ -28,6 +28,7 @@ from pipeline.fetchers import (
     jobspy_fetcher,
     lever,
     smartrecruiters,
+    undated,
     workday,
 )
 from pipeline.filters import prefilter
@@ -245,6 +246,7 @@ def fetch_and_prefilter(
     applied_history: prefilter.AppliedHistory,
     use_jobspy: bool = False,
     discover: bool = True,
+    conn=None,
 ) -> list[Job]:
     jobs: list[Job] = []
     for company in companies:
@@ -259,6 +261,9 @@ def fetch_and_prefilter(
             log.exception("Failed fetching %s (%s)", company.name, company.ats)
             continue
 
+        if any(r.undated for r in raw_jobs):
+            known = undated.known_ids(conn, raw_jobs[0].source, company.name) if conn is not None else None
+            raw_jobs = undated.resolve(raw_jobs, known)
         jobs.extend(_process(raw_jobs, since, applied_history))
 
     if use_jobspy:
@@ -311,7 +316,7 @@ def main() -> None:
         try:
             applied_history = load_applied_history(conn)
             sync_cap_exempt(conn, companies)
-            jobs = fetch_and_prefilter(companies, since, applied_history, use_jobspy)
+            jobs = fetch_and_prefilter(companies, since, applied_history, use_jobspy, conn=conn)
             jobs = dedup_batch(jobs)
 
             counts = {"fetched": len(jobs), "inserted": 0, "updated": 0, "unchanged": 0, "excluded": 0}

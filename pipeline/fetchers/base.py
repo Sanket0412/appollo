@@ -5,7 +5,7 @@ import hashlib
 import json
 import time
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 import requests
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -22,10 +22,12 @@ SESSION = requests.Session()
 SESSION.headers["User-Agent"] = USER_AGENT
 
 _last_request_at: dict[str, float] = {}
+# Per-host overrides, e.g. a robots.txt Crawl-delay.
+HOST_INTERVALS: dict[str, float] = {"www.citadel.com": 10.0}
 
 
 def _rate_limit(host: str) -> None:
-    wait = MIN_HOST_INTERVAL - (time.monotonic() - _last_request_at.get(host, 0.0))
+    wait = HOST_INTERVALS.get(host, MIN_HOST_INTERVAL) - (time.monotonic() - _last_request_at.get(host, 0.0))
     if wait > 0:
         time.sleep(wait)
 
@@ -117,3 +119,19 @@ def post_json(url: str, body: dict, use_cache: bool = True):
     if use_cache:
         _write_cache(cache_path, payload)
     return payload
+
+
+def get_text(url: str, use_cache: bool = True, params: dict | None = None) -> str:
+    """GET returning the body as text (HTML, XML, RSS). Cached like the JSON helpers; the shared
+    SESSION keeps any automatic session cookie a redirect sets (iCIMS needs this)."""
+    full = url if not params else f"{url}?{urlencode(params)}"
+    cache_path = _cache_path("GET", full, None)
+    if use_cache:
+        cached = _read_cache(cache_path)
+        if cached is not None:
+            return cached["text"]
+    resp = _request("GET", full)
+    resp.raise_for_status()
+    if use_cache:
+        _write_cache(cache_path, {"text": resp.text})
+    return resp.text

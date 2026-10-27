@@ -9,13 +9,14 @@ from pydantic import BaseModel
 
 class CompanyConfig(BaseModel):
     name: str
-    ats: str  # greenhouse | lever | ashby | workday | smartrecruiters
+    ats: str  # greenhouse | lever | ashby | workday | smartrecruiters | oracle_rc | eightfold | amazon | uber | avature | icims | successfactors | citadel
     source: str = "manual"  # manual | hn | discovered
     cap_exempt: bool = False
     slug: str | None = None  # greenhouse | lever | ashby | smartrecruiters
     host: str | None = None  # workday
     tenant: str | None = None  # workday
     board: str | None = None  # workday
+    site: str | None = None  # oracle_rc siteNumber, eightfold domain, avature/icims/successfactors path or portal id
 
 
 class RawJob(BaseModel):
@@ -29,6 +30,7 @@ class RawJob(BaseModel):
     posted_at: datetime | None = None
     description_html: str | None = None
     description_text: str | None = None
+    undated: bool = False  # source has no posted date; run.py dates it (see fetchers/undated.py)
 
 
 class Job(BaseModel):
