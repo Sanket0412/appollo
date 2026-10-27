@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 class CompanyConfig(BaseModel):
     name: str
-    ats: str  # greenhouse | lever | ashby | workday | smartrecruiters | oracle_rc | eightfold | amazon | uber | avature | icims | successfactors | citadel
+    ats: str  # greenhouse | lever | ashby | workday | smartrecruiters | oracle_rc | eightfold | amazon | uber | avature | icims | successfactors
     source: str = "manual"  # manual | hn | discovered
     cap_exempt: bool = False
     slug: str | None = None  # greenhouse | lever | ashby | smartrecruiters

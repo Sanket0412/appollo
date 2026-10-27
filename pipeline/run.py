@@ -25,12 +25,16 @@ from pipeline.export import emailer
 from pipeline.fetchers import (
     amazon,
     ashby,
+    avature,
     eightfold,
     greenhouse,
+    icims,
     jobspy_fetcher,
     lever,
     oracle_rc,
     smartrecruiters,
+    successfactors,
+    uber,
     undated,
     workday,
 )
@@ -55,6 +59,10 @@ FETCHERS = {
     "oracle_rc": oracle_rc.fetch,
     "eightfold": eightfold.fetch,
     "amazon": amazon.fetch,
+    "uber": uber.fetch,
+    "avature": avature.fetch,
+    "icims": icims.fetch,
+    "successfactors": successfactors.fetch,
 }
 
 log = get_logger("run")

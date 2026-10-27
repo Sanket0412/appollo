@@ -23,7 +23,7 @@ SESSION.headers["User-Agent"] = USER_AGENT
 
 _last_request_at: dict[str, float] = {}
 # Per-host overrides, e.g. a robots.txt Crawl-delay.
-HOST_INTERVALS: dict[str, float] = {"www.citadel.com": 10.0}
+HOST_INTERVALS: dict[str, float] = {}
 
 
 def _rate_limit(host: str) -> None:

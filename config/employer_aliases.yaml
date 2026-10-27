@@ -42,3 +42,19 @@ Millennium Management:
 
 JPMorgan Chase:
   - JPMorgan Chase & Co.
+
+# Found 2026-10-26 when adding the group C boards; the display name alone fell below the fuzzy threshold.
+Uber:
+  - Uber Technologies, Inc.
+
+Bloomberg:
+  - Bloomberg L.P.
+
+Two Sigma:
+  - Two Sigma Investments, LP
+
+SMBC:
+  - Sumitomo Mitsui Banking Corporation
+
+Princeton University:
+  - The Trustees of Princeton University

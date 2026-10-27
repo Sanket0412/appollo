@@ -679,3 +679,9 @@
   source: manual}
 - {name: Amazon, ats: amazon, source: manual}
 - {name: Audible, ats: amazon, site: Audible, source: manual}
+- {name: Uber, ats: uber, source: manual}
+- {name: New York University, ats: icims, host: uscareers-nyu.icims.com, cap_exempt: true, source: manual}
+- {name: Princeton University, ats: icims, host: main-princeton.icims.com, cap_exempt: true, source: manual}
+- {name: Bloomberg, ats: avature, host: bloomberg.avature.net, site: careers, source: manual}
+- {name: Two Sigma, ats: avature, host: careers.twosigma.com, site: careers, source: manual}
+- {name: SMBC, ats: successfactors, host: careers.smbcgroup.com, site: smbc, source: manual}

@@ -11,7 +11,8 @@ _PUNCT_RE = re.compile(r"[^\w\s]")
 _WHITESPACE_RE = re.compile(r"\s+")
 
 ATS_SOURCES = frozenset(
-    {"greenhouse", "lever", "ashby", "workday", "smartrecruiters", "oracle_rc", "eightfold", "amazon"}
+    {"greenhouse", "lever", "ashby", "workday", "smartrecruiters", "oracle_rc", "eightfold", "amazon",
+     "uber", "avature", "icims", "successfactors"}
 )
 
 

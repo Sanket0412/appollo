@@ -1,4 +1,4 @@
-"""Dating for sources with no usable posted date (Two Sigma, SMBC, Citadel, Bloomberg overflow).
+"""Dating for sources with no usable posted date (Bloomberg, Two Sigma).
 
 Decided 2026-10-26: the first time a board is seen, every current posting is a baseline and is stored
 as stale (so it never reaches the digest). After that, an ID not seen before is dated now. A board
