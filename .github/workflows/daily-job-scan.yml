@@ -1,6 +1,6 @@
 name: daily-job-scan
 
-# Fallback and catch-up run. The main run is local at 7 AM (scripts/run_local.ps1, includes JobSpy).
+# Fallback and catch-up run. Scheduled at 06:00 because GitHub starts scheduled runs 3 to 4 hours late (about 10:00 in practice). The main run is local at 7 AM (scripts/run_local.ps1, includes JobSpy).
 # It only emails when it finds roles the local run has not already delivered.
 
 # The repo is public, so this workflow must never print job titles, companies, links, resume text or
@@ -8,7 +8,7 @@ name: daily-job-scan
 
 on:
   schedule:
-    - cron: "0 10 * * *"
+    - cron: "0 6 * * *"
       timezone: "America/New_York"   # documented in GitHub's workflow syntax reference
   workflow_dispatch:
     inputs:
